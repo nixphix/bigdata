@@ -3,8 +3,8 @@
 
 sqoop import \
 --connect jdbc:mysql://quickstart.cloudera/retail_db \
---username retail_dba
---password cloudera
---table order_items
+--username retail_dba \
+--password cloudera \
+--table order_items \
 --targrt-dir /user/cloudera/retail/order_items
 
