@@ -29,11 +29,12 @@ sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 --table departments \
 --target-dir /user/cloudera/sqoop_import/departments_delim \
 --fields-terminated-by \| \
---lines-terminated-by \: \
+--lines-terminated-by '\n' \
 -m 1 
 
 hdfs dfs -cat /user/cloudera/sqoop_import/departments_delim/part*
 
+#---
 #look at hive delimiters
 sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 --username retail_dba \
@@ -50,3 +51,13 @@ show tables;
 describe formatted department_delim;
 
 dfs -cat /user/hive/warehouse/department_delim/part*
+
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--target-dir /user/cloudera/sqoop_import/departments_delim_hive \
+--fields-terminated-by ' ' \
+--lines-terminated-by '\n' \
+-m 1
+
