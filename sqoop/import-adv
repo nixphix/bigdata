@@ -1,0 +1,52 @@
+# simple import with enclosed by clause
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--target-dir /user/cloudera/sqoop_import/departments_enc  \
+--enclosed-by \' \
+-m 1
+
+#check outout from hdfs
+hdfs dfs -cat /user/cloudera/sqoop_import/departments_enc/part*
+
+#---find use case
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--target-dir /user/cloudera/sqoop_import/departments_op_enc  \
+--enclosed-by \' \
+--optionally-enclosed-by \" \
+-m 1
+
+hdfs dfs -cat /user/cloudera/sqoop_import/departments_op_enc/part*
+
+#import with custom delimiters
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--target-dir /user/cloudera/sqoop_import/departments_delim \
+--fields-terminated-by \| \
+--lines-terminated-by \: \
+-m 1 
+
+hdfs dfs -cat /user/cloudera/sqoop_import/departments_delim/part*
+
+#look at hive delimiters
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--warehouse-dir /user/hive/warehouse/ \
+--hive-import \
+--create-hive-table \
+--hive-table department_delim \
+-m 1
+
+hive 
+show tables;
+describe formatted department_delim;
+
+dfs -cat /user/hive/warehouse/department_delim/part*
