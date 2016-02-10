@@ -10,6 +10,8 @@ sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 #check outout from hdfs
 hdfs dfs -cat /user/cloudera/sqoop_import/departments_enc/part*
 
+#############################################################################
+
 #---find use case
 sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 --username retail_dba \
@@ -21,6 +23,8 @@ sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 -m 1
 
 hdfs dfs -cat /user/cloudera/sqoop_import/departments_op_enc/part*
+
+#############################################################################
 
 #import with custom delimiters
 sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
@@ -34,32 +38,7 @@ sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 
 hdfs dfs -cat /user/cloudera/sqoop_import/departments_delim/part*
 
-#---
-#look at hive delimiters
-sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
---username retail_dba \
---password cloudera \
---table departments \
---warehouse-dir /user/hive/warehouse/ \
---hive-import \
---create-hive-table \
---hive-table department_delim \
--m 1
-
-hive 
-show tables;
-describe formatted department_delim;
-
-dfs -cat /user/hive/warehouse/department_delim/part*
-
-sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
---username retail_dba \
---password cloudera \
---table departments \
---target-dir /user/cloudera/sqoop_import/departments_delim_hive \
---fields-terminated-by ' ' \
---lines-terminated-by '\n' \
--m 1
+#############################################################################
 
 #import with null replacements
 mysql -u retail_dba -p cloudera
@@ -102,9 +81,57 @@ sqoop export --connect jdbc:mysql://quickstart.cloudera/retail_db \
 --table departments_null \
 --export-dir /user/cloudera/sqoop_import/departments_null \
 --input-null-string 'DUMMY' \
---input-null-non-string '0'
+--input-null-non-string '0' \
+-m 1
 
 #check if export is successful
 mysql -u retail_dba -p 
 use retail_db;
 select * from departments_null;
+
+#############################################################################
+
+#look at hive delimiters
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments_null \
+--warehouse-dir /user/hive/warehouse/ \
+--hive-import \
+--create-hive-table \
+--hive-table department_delim_null \
+--null-string 'DUMMY' \
+--null-non-string -999 \
+-m 1
+
+hive 
+show tables;
+describe formatted department_delim_null;
+select * from department_delim_null;
+#drop table department_delim_null;
+dfs -cat /user/hive/warehouse/department_delim_null/part*;
+exit;
+
+hdfs dfs -get /user/hive/warehouse/department_delim_null/part* hive_file
+view hive_file 
+:q
+
+#mimic hive import in hdfs
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments_null \
+--target-dir /user/cloudera/sqoop_import/departments_delim_hive \
+--fields-terminated-by '\001' \
+--lines-terminated-by '\n' \
+--null-string 'DUMMY' \
+--null-non-string -999 \
+-m 1
+
+hdfs dfs -cat /user/cloudera/sqoop_import/departments_delim_hive/part*
+
+hdfs dfs -get /user/cloudera/sqoop_import/departments_delim_hive/part* hdfs_file
+view hdfs_file 
+:q
+
+#############################################################################
