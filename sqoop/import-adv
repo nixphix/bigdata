@@ -61,3 +61,31 @@ sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 --lines-terminated-by '\n' \
 -m 1
 
+#import with null replacements
+mysql -u retail_dba -p cloudera
+use retail_db;
+create table departments_null (department_id int, department_name varchar(20));
+desc departments_null;
+insert into departments_null select * from departments;
+insert into departments_null values(null,null);
+insert into departments_null values(99,null);
+insert into departments_null values(null,'Test');
+select * from departments_null;
+exit
+
+sqoop eval --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--query "select * from departments_null"
+
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments_null \
+--target-dir /user/cloudera/sqoop_import/departments_null \
+--null-string 'DUMMY' \
+--null-non-string '0' \
+-m 1
+
+hdfs dfs -cat /user/cloudera/sqoop_import/departments_null/part*
+
