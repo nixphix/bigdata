@@ -89,3 +89,22 @@ sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 
 hdfs dfs -cat /user/cloudera/sqoop_import/departments_null/part*
 
+#delete the table to export data from hdfs to mysql
+mysql -u retail_dba -p 
+use retail_db;
+select * from departments_null;
+delete from  departments_null;
+
+#export data to mysql
+sqoop export --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments_null \
+--export-dir /user/cloudera/sqoop_import/departments_null \
+--input-null-string 'DUMMY' \
+--input-null-non-string '0'
+
+#check if export is successful
+mysql -u retail_dba -p 
+use retail_db;
+select * from departments_null;
