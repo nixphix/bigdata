@@ -7,7 +7,7 @@ sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 --password cloudera \
 --table departments \
 --target-dir /user/cloudera/sqoop_import/departments_txt  \
---as-textfile
+--as-textfile \
 -m 1
 
 hdfs dfs -cat /user/cloudera/sqoop_import/departments_txt/part*
@@ -19,10 +19,12 @@ sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 --password cloudera \
 --table departments \
 --target-dir /user/cloudera/sqoop_import/departments_avro  \
---as-avrodatafile
+--as-avrodatafile \
 -m 1
 
-hdfs dfs -cat /user/cloudera/sqoop_import/departments_avro/part*
+hdfs dfs -ls /user/cloudera/sqoop_import/departments_avro
+hdfs dfs -cat /user/cloudera/sqoop_import/departments_avro/*.avro
+cat sqoop_import_departments.avsc
 #############################################################################
 
 # import as sequence data file
@@ -30,11 +32,14 @@ sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 --username retail_dba \
 --password cloudera \
 --table departments \
---target-dir /user/cloudera/sqoop_import/departments_seq  \
---as-sequencefile
+--target-dir /user/cloudera/sqoop_import/departments_seq \
+--as-sequencefile \
 -m 1
 
+hdfs dfs -ls /user/cloudera/sqoop_import/departments_seq
 hdfs dfs -cat /user/cloudera/sqoop_import/departments_seq/part*
+hdfs dfs -get /user/cloudera/sqoop_import/departments_seq/part-m-00000 /home/cloudera/departments_seq
+view /home/cloudera/departments_seq
 #############################################################################
 
 # import as parquetfile data file
@@ -43,11 +48,11 @@ sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 --password cloudera \
 --table departments \
 --target-dir /user/cloudera/sqoop_import/departments_parq  \
---as-parquetfile
+--as-parquetfile \
 -m 1
 
-hdfs dfs -cat /user/cloudera/sqoop_import/departments_parq/part*
-#############################################################################
+ hdfs dfs -cat /user/cloudera/sqoop_import/departments_parq/*.parquet
+ #############################################################################
 
 
 
