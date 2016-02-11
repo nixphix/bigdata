@@ -1,0 +1,53 @@
+#!/bin/bash
+
+#############################################################################
+# import as text file (default format)
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--target-dir /user/cloudera/sqoop_import/departments_txt  \
+--as-textfile
+-m 1
+
+hdfs dfs -cat /user/cloudera/sqoop_import/departments_txt/part*
+#############################################################################
+
+# import as avro data file
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--target-dir /user/cloudera/sqoop_import/departments_avro  \
+--as-avrodatafile
+-m 1
+
+hdfs dfs -cat /user/cloudera/sqoop_import/departments_avro/part*
+#############################################################################
+
+# import as sequence data file
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--target-dir /user/cloudera/sqoop_import/departments_seq  \
+--as-sequencefile
+-m 1
+
+hdfs dfs -cat /user/cloudera/sqoop_import/departments_seq/part*
+#############################################################################
+
+# import as parquetfile data file
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--target-dir /user/cloudera/sqoop_import/departments_parq  \
+--as-parquetfile
+-m 1
+
+hdfs dfs -cat /user/cloudera/sqoop_import/departments_parq/part*
+#############################################################################
+
+
+
