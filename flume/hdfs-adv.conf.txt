@@ -19,11 +19,13 @@ a1.sinks.k1.hdfs.filePrefix = netcat
 a1.sinks.k1.hdfs.inUseSuffix = .inuse.temp
 a1.sinks.k1.hdfs.fileType = DataStream
 a1.sinks.k1.hdfs.rollInterval = 120
+#a1.sinks.k1.hdfs.rollCount = 20
 
 # Use a channel which buffers events in memory
 a1.channels.c1.type = memory
 a1.channels.c1.capacity = 1000
 a1.channels.c1.transactionCapacity = 100
+#a1.channels.c1.transactionCapacity = 12
 
 # Bind the source and sink to the channel
 a1.sources.r1.channels = c1
