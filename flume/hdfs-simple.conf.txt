@@ -12,10 +12,11 @@ a1.sources.r1.port = 44444
 
 # Describe the sink
 a1.sinks.k1.type = hdfs 
+
 # Configure the sink
 a1.sinks.k1.hdfs.path = hdfs://quickstart.cloudera:8020/user/cloudera/flume
 a1.sinks.k1.hdfs.filePrefix = netcat
-a1.sinks.k1.hdfs.inUseSuffix = inuse.temp
+a1.sinks.k1.hdfs.inUseSuffix = .inuse.temp
 
 # Use a channel which buffers events in memory
 a1.channels.c1.type = memory
