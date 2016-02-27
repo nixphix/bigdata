@@ -34,7 +34,47 @@ flume-ng agent -name a1 \
 # telnet to hdfs
 telnet localhost 44444
 
-# check the file in hdfs - for every 2min the temp file will be rolled out if there is any event in that time frame
+# check the file in hdfs - for every 30s or 10 events the temp file will be rolled out if there is any event in that time frame
 hdfs dfs -ls /user/cloudera/flume
 
+#########################   Netcat to HDFS Adv  #########################
+# create conf for netcat-mem-hdfs
+cd /home/cloudera/flume/conf
+cp hdfs-simple.conf hdfs-adv.conf
+vi hdfs-adv.conf
 
+# delete hdfs folder if it exists
+hdfs dfs -rm -R /user/cloudera/flume
+hdfs dfs -ls /user/cloudera
+
+# flume cmd
+flume-ng agent -name a1 \
+--conf /home/cloudera/flume/conf \
+--conf-file /home/cloudera/flume/conf/hdfs-adv.conf
+
+# telnet to hdfs
+telnet localhost 44444
+
+# check the file in hdfs - for every 2min or 10 events the temp file will be rolled out if there is any event in that time frame
+hdfs dfs -ls /user/cloudera/flume
+
+# check the data 
+hdfs dfs -cat /user/cloudera/flume/*
+
+#******** More Config ********#
+#add folloing to conf
+a1.sinks.k1.hdfs.rollCount = 20
+
+cd /home/cloudera/flume/conf
+vi hdfs-adv.conf
+
+# flume cmd
+flume-ng agent -name a1 \
+--conf /home/cloudera/flume/conf \
+--conf-file /home/cloudera/flume/conf/hdfs-adv.conf
+
+# telnet to hdfs
+telnet localhost 44444
+
+# check the file in hdfs - for every 2min or 20 events the temp file will be rolled out if there is any event in that time frame
+hdfs dfs -ls /user/cloudera/flume
