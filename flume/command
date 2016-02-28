@@ -78,3 +78,17 @@ telnet localhost 44444
 
 # check the file in hdfs - for every 2min or 20 events the temp file will be rolled out if there is any event in that time frame
 hdfs dfs -ls /user/cloudera/flume
+
+###########################  Weblog to HDFS  ###########################
+# Source configuration 
+# Check source log file
+tail -F /opt/gen_logs/logs/access.log
+
+# Start mock logger script
+start_logs
+
+# check if the tail command updates
+stop_logs
+
+
+
