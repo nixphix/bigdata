@@ -14,6 +14,7 @@ a1.sinks.k1.type = hdfs
 a1.sinks.k1.hdfs.path = hdfs://quickstart.cloudera:8020/user/cloudera/flume
 a1.sinks.k1.hdfs.filePrefix = weblog
 a1.sinks.k1.hdfs.inUseSuffix = .inuse.temp
+a1.sinks.k1.hdfs.fileType = DataStream
 
 # Use a channel which buffers events in a file
 a1.channels.c1.type = file
