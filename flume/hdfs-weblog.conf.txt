@@ -12,7 +12,7 @@ a1.sources.r1.command = tail -F /opt/gen_logs/logs/access.log
 # Describe/configure the sink
 a1.sinks.k1.type = hdfs
 a1.sinks.k1.hdfs.path = hdfs://quickstart.cloudera:8020/user/cloudera/flume
-a1.sinks.k1.hdfs.filePrefix = netcat
+a1.sinks.k1.hdfs.filePrefix = weblog
 a1.sinks.k1.hdfs.inUseSuffix = .inuse.temp
 
 # Use a channel which buffers events in a file
