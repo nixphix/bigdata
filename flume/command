@@ -80,15 +80,31 @@ telnet localhost 44444
 hdfs dfs -ls /user/cloudera/flume
 
 ###########################  Weblog to HDFS  ###########################
-# Source configuration 
+# Source configuration
 # Check source log file
 tail -F /opt/gen_logs/logs/access.log
 
 # Start mock logger script
 start_logs
 
-# check if the tail command updates
+# Check if the tail command updates
 stop_logs
 
+# Create the flume conf file
+cd /home/cloudera/flume/conf
+vi hdfs-weblog.conf
 
+# remove old files
+ hdfs dfs -rm -R flume
 
+# flume cmd
+flume-ng agent -name a1 \
+--conf /home/cloudera/flume/conf \
+--conf-file /home/cloudera/flume/conf/hdfs-weblog.conf
+
+# Check the file in hdfs
+hdfs dfs -ls /user/cloudera/flume
+hdfs dfs -cat /user/cloudera/flume/
+
+# Start the weblog mocker script
+start_logs
