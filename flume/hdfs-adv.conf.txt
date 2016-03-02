@@ -6,26 +6,27 @@ a1.sinks = k1
 a1.channels = c1
 
 # Describe/configure the source
-a1.sources.r1.type = netcat
-a1.sources.r1.bind = localhost
-a1.sources.r1.port = 44444
+a1.sources.r1.type = exec
+a1.sources.r1.command = tail -F /opt/gen_logs/logs/access.log
 
-# Describe the sink
-a1.sinks.k1.type = hdfs 
-
-# Configure the sink
-a1.sinks.k1.hdfs.path = hdfs://quickstart.cloudera:8020/user/cloudera/flume
-a1.sinks.k1.hdfs.filePrefix = netcat
+# Describe/configure the sink
+a1.sinks.k1.type = hdfs
+a1.sinks.k1.hdfs.path = hdfs://quickstart.cloudera:8020/user/cloudera/flume/%y-%m-%d
+a1.sinks.k1.hdfs.filePrefix = weblog
 a1.sinks.k1.hdfs.inUseSuffix = .inuse.temp
 a1.sinks.k1.hdfs.fileType = DataStream
 a1.sinks.k1.hdfs.rollInterval = 120
-#a1.sinks.k1.hdfs.rollCount = 20
+a1.sinks.k1.hdfs.rollCount = 100
+a1.sinks.k1.hdfs.rollSize =  1048576
+a1.sinks.k1.hdfs.useLocalTimeStamp = true
 
-# Use a channel which buffers events in memory
-a1.channels.c1.type = memory
-a1.channels.c1.capacity = 1000
-a1.channels.c1.transactionCapacity = 100
-#a1.channels.c1.transactionCapacity = 12
+# Use a channel which buffers events in a file
+a1.channels.c1.type = file
+a1.channels.c1.dataDir = /home/cloudera/flume/dataDir
+a1.channels.c1.checkpointDir = /home/cloudera/flume/checkpointDir
+a1.channels.c1.transactionCapacity = 500000
+a1.channels.c1.capacity = 2000000
+a1.channels.c1.checkpointInterval =300000
 
 # Bind the source and sink to the channel
 a1.sources.r1.channels = c1
