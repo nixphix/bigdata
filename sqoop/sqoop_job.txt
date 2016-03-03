@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# create hdfs folder
+hdfs dfs -mkdir /user/cloudera/sqoop_job
+
+# create sqoop import job 
+sqoop job --create mysql2hdfs_import \
+-- import \
+--connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username=retail_dba \
+-P \
+--table departments \
+--target-dir /user/cloudera/sqoop_job/departments \
+--outdir java_files
+
+# list all the saved jobs
+sqoop job --list
+
+# display job config
+sqoop job --show mysql2hdfs_import
+
+# execute the sqoop job
+sqoop job --exec mysql2hdfs_import
+
+# remove if the folder already exist
+#hdfs dfs -rm -R /user/cloudera/sqoop_job/departments
+
+# check hdfs
+hdfs dfs -ls /user/cloudera/sqoop_job/departments
+
+# view the job output
+hdfs dfs -cat /user/cloudera/sqoop_job/departments/part*
+
