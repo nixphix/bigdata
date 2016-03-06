@@ -1,0 +1,90 @@
+#!/bin/bash
+
+# create project folder
+hdfs dfs -mkdir /user/cloudera/sqoop_merge
+hdfs dfs -ls
+
+# create a local directory for codegen
+mkdir -p /home/cloudera/sqoop_codegen/merge
+
+# check mysql db 
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--query "select * from departments"
+
+# import data from mysql
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera/retail_db \
+--direct \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--as-textfile \
+-m 1 \
+--target-dir /user/cloudera/sqoop_merge/departments \
+--outdir /home/cloudera/sqoop_codegen/merge
+
+# check the imported data and code gen output
+hdfs dfs -ls /user/cloudera/sqoop_merge/departments
+hdfs dfs -cat /user/cloudera/sqoop_merge/departments/*
+ls /home/cloudera/sqoop_codegen/merge
+
+# update a row in mysql
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--query "update departments set department_name = 'sqoop_merge_update' where department_id=800000"
+# alternatively by 
+#mysql retail_db -u retail_dba -p
+#update departments set department_name = 'sqoop_merge_update' where department_id=800000
+
+# insert a row in mysql
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--query "insert into departments values(900000,'sqoop_merge_ins')"
+# alternatively by
+#mysql retail_db -u retail_dba -p
+#insert into departments values(900000,'sqoop_merge_ins')
+
+# check mysql db after update & insert
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--query "select * from departments"
+
+# import delta from 
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera/retail_db \
+--direct \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--as-textfile \
+-m 1 \
+--target-dir /user/cloudera/sqoop_merge/departments_delta \
+--where "department_id>10"
+
+# check the imported data and code gen output
+hdfs dfs -ls /user/cloudera/sqoop_merge/departments_delta
+hdfs dfs -cat /user/cloudera/sqoop_merge/departments_delta/*
+
+# cat stg and delta 
+hdfs dfs -cat /user/cloudera/sqoop_merge/departments*/*
+
+# merge data set
+sqoop merge \
+--merge-key department_id \
+--new-data /user/cloudera/sqoop_merge/departments_delta \
+--onto /user/cloudera/sqoop_merge/departments \
+--target-dir /user/cloudera/sqoop_merge/departments_stg \
+--class-name departments \
+--jar-file  /home/cloudera/sqoop_codegen/merge
+
+
+
