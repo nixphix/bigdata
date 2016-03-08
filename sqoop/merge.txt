@@ -40,6 +40,8 @@ sqoop eval \
 # alternatively by 
 #mysql retail_db -u retail_dba -p
 #update departments set department_name = 'sqoop_merge_update' where department_id=800000
+# roll back script
+#update departments set department_name = 'skew' where department_id=800000
 
 # insert a row in mysql
 sqoop eval \
@@ -50,6 +52,8 @@ sqoop eval \
 # alternatively by
 #mysql retail_db -u retail_dba -p
 #insert into departments values(900000,'sqoop_merge_ins')
+# roll back script
+#delete from departments where department_id = 900000
 
 # check mysql db after update & insert
 sqoop eval \
@@ -58,7 +62,7 @@ sqoop eval \
 --password cloudera \
 --query "select * from departments"
 
-# import delta from 
+# import delta from
 sqoop import \
 --connect jdbc:mysql://quickstart.cloudera/retail_db \
 --direct \
@@ -74,7 +78,7 @@ sqoop import \
 hdfs dfs -ls /user/cloudera/sqoop_merge/departments_delta
 hdfs dfs -cat /user/cloudera/sqoop_merge/departments_delta/*
 
-# cat stg and delta 
+# cat stg and delta
 hdfs dfs -cat /user/cloudera/sqoop_merge/departments*/*
 
 # merge data set
@@ -85,6 +89,4 @@ sqoop merge \
 --target-dir /user/cloudera/sqoop_merge/departments_stg \
 --class-name departments \
 --jar-file  /home/cloudera/sqoop_codegen/merge
-
-
 
