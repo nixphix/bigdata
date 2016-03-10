@@ -74,6 +74,9 @@ sqoop import \
 --target-dir /user/cloudera/sqoop_merge/departments_delta \
 --where "department_id>10"
 
+# Copy the jar file path from job above, it will be like following
+/tmp/sqoop-cloudera/compile/b4c57d510b6fd900ec3783db9b19f439/departments.jar
+
 # check the imported data and code gen output
 hdfs dfs -ls /user/cloudera/sqoop_merge/departments_delta
 hdfs dfs -cat /user/cloudera/sqoop_merge/departments_delta/*
@@ -88,5 +91,19 @@ sqoop merge \
 --onto /user/cloudera/sqoop_merge/departments \
 --target-dir /user/cloudera/sqoop_merge/departments_stg \
 --class-name departments \
---jar-file  /home/cloudera/sqoop_codegen/merge
+--jar-file  /tmp/sqoop-cloudera/compile/b4c57d510b6fd900ec3783db9b19f439/departments.jar
 
+# check merged output
+hdfs dfs -ls /user/cloudera/sqoop_merge/departments_stg
+hdfs dfs -cat /user/cloudera/sqoop_merge/departments_stg/*
+
+# move merged data to departments folder
+hdfs dfs -mv sqoop_merge/departments_stg sqoop_merge/departments
+hdfs dfs -cat sqoop_merge/departments/*
+
+# compare merge output with mysql db
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--query "select * from departments"
