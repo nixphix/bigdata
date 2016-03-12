@@ -1,0 +1,6 @@
+os.environ['SPARK_CLASSPATH'] = "/usr/share/java/mysql-connector-java.jar"
+
+from pyspark.sql import SQLContext
+sqlC = SQLContext(sc)
+jdbcurl = "jdbc:mysql://quickstart.cloudera:3306/retail_db?user=retail_dba&password=cloudera"
+rdd = sqlC.load(source="jdbc",url=jdbcurl,dbtable="departments")
