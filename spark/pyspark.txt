@@ -3,8 +3,39 @@ os.environ['SPARK_CLASSPATH'] = "/usr/share/java/mysql-connector-java.jar"
 from pyspark.sql import SQLContext
 sqlC = SQLContext(sc)
 jdbcurl = "jdbc:mysql://quickstart.cloudera:3306/retail_db?user=retail_dba&password=cloudera"
-rdd = sqlC.load(source="jdbc",url=jdbcurl,dbtable="departments")
+df = sqlC.load(source="jdbc",url=jdbcurl,dbtable="departments")
 
-for r in rdd.collect():
-    print r
-rdd.count()
+for d in df.collect():
+    print d
+    # print d.deparment_id, d.department_name
+df.count()
+
+print df.count()
+
+#---------------------Submiting a pySpark Job---------------------#
+
+# create target folder
+hdfs dfs -mkdir pyspark
+
+#create workspace
+mkdir spark
+
+# create script to read and save files in hdfs
+vi saveFile.py
+###
+from pyspark import SparkContext, SparkConf
+
+conf = SparkConf().setAppName("pySparkApp-Test").setMaster(yarn)
+sc = SparkContext(conf=conf)
+rdd = sc.textFile("/user/cloudera/sqoop_import/departments")
+for line in rdd.collect():
+    print line
+
+rdd.saveAsTextFile("/user/cloudera/pyspark/testdepartments")
+
+:wq
+###
+
+# check if source exists
+#hdfs dfs -cat /user/cloudera/sqoop_import/departments/*
+
