@@ -1,3 +1,6 @@
+#---------------------importing data from mysql in pySpark---------------------#
+
+
 os.environ['SPARK_CLASSPATH'] = "/usr/share/java/mysql-connector-java.jar"
 
 from pyspark.sql import SQLContext
