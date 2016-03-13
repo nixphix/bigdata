@@ -1,13 +1,49 @@
 #---------------reading/writing seq file from/to hdfs---------------#
-# you will need a sequence file source which can be created with following sqoop cmd
-#sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db --username retail_dba --password cloudera --table departments --target-dir /user/cloudera/sqoop_import/departments  --as-sequencefile -m 1
 # check if source exists in hdfs
-hdfs dfs -cat sqoop_import/departments/*
+hdfs dfs -cat sqoop_import/departments_txt/*
 
 # start pyspark with yarn master
 pyspark --master yarn
-sqrdd = sc.sequenceFile("sqoop_import/departments/")
+
+# load source data from a text file
+txrdd = sc.textFile("sqoop_import/departments_txt/")
+for record in txrdd.collect():
+    print record
+
+# split text data into key,value pairs and save as seq file in hdfs
+txrdd.map(lambda a: (None,a)).saveAsSequenceFile("pyspark/departments_seq_nokey")
+txrdd.map(lambda a: tuple(a.split(",",1))).saveAsSequenceFile("pyspark/departments_seq")
+txrdd.map(lambda a: (int(a.split(",",1)[0]),a.split(",",1)[1])).saveAsNewAPIHadoopFile("pyspark/departments_newapi_seq","org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat", keyClass="org.apache.hadoop.io.IntWritable", valueClass="org.apache.hadoop.io.Text")
+
+# check the output file in hdfs
+hdfs dfs -ls  pyspark/departments_seq
+hdfs dfs -cat pyspark/departments_seq/*
+
+hdfs dfs -ls  pyspark/departments_seq_nokey
+hdfs dfs -cat pyspark/departments_seq_nokey/*
+
+hdfs dfs -ls  pyspark/departments_newapi_seq
+hdfs dfs -cat pyspark/departments_newapi_seq/*
+
+# reading seq file from hdfs 
+sqrdd = sc.sequenceFile("pyspark/departments_seq")
 for record in sqrdd.collect():
     print record
+
+# reading seq with no datatype file from hdfs
+sqrdd = sc.sequenceFile("pyspark/departments_newapi_seq", "org.apache.hadoop.io.IntWritable", "org.apache.hadoop.io.Text")
+for record in sqrdd.collect():
+    print record
+
+# reading seq with nokey file from hdfs
+sqnkrdd = sc.sequenceFile("pyspark/departments_seq_nokey")
+for record in sqnkrdd.collect():
+    print record
+
+# reading seq with datatype file from hdfs
+newapirdd = sc.sequenceFile("pyspark/departments_newapi_seq", "org.apache.hadoop.io.IntWritable", "org.apache.hadoop.io.Text")
+for record in newapirdd.collect():
+    print record
+
 
 
