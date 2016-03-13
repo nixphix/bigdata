@@ -1,0 +1,13 @@
+#---------------reading/writing seq file from/to hdfs---------------#
+# you will need a sequence file source which can be created with following sqoop cmd
+#sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db --username retail_dba --password cloudera --table departments --target-dir /user/cloudera/sqoop_import/departments  --as-sequencefile -m 1
+# check if source exists in hdfs
+hdfs dfs -cat sqoop_import/departments/*
+
+# start pyspark with yarn master
+pyspark --master yarn
+sqrdd = sc.sequenceFile("sqoop_import/departments/")
+for record in sqrdd.collect():
+    print record
+
+
