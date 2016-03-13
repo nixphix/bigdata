@@ -19,15 +19,16 @@ hdfs dfs -mkdir pyspark
 
 #create workspace
 mkdir spark
+cd spark
 
 # create script to read and save files in hdfs
 vi saveFile.py
 ###
 from pyspark import SparkContext, SparkConf
 
-conf = SparkConf().setAppName("pySparkApp-Test").setMaster(yarn)
+conf = SparkConf().setAppName("pySparkApp-Test")
 sc = SparkContext(conf=conf)
-rdd = sc.textFile("/user/cloudera/sqoop_import/departments")
+rdd = sc.textFile("/user/cloudera/sqoop_import/departments_txt")
 for line in rdd.collect():
     print line
 
@@ -37,5 +38,41 @@ rdd.saveAsTextFile("/user/cloudera/pyspark/testdepartments")
 ###
 
 # check if source exists
-#hdfs dfs -cat /user/cloudera/sqoop_import/departments/*
+hdfs dfs -ls /user/cloudera/sqoop_import/departments_txt
+hdfs dfs -cat /user/cloudera/sqoop_import/departments_txt/*
+# if source is not available then use following cmd to import source data
+#sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db --username retail_dba --password cloudera --table departments --target-dir /user/cloudera/sqoop_import/departments_txt  --as-textfile -m 1
 
+## submit the script to spark
+# running in yarn mode
+spark-submit --master yarn saveFile.py
+
+# check status in resource manager http://quickstart.cloudera:8088/cluster/
+
+# check saved file - will have as many part as the number of executer used
+hdfs dfs -ls  pyspark/testdepartments
+hdfs dfs -cat pyspark/testdepartments/*
+# delete tgt files for retry with local mode
+hdfs dfs -rm -R pyspark/testdepartments
+
+# running in local mode with single executor
+spark-submit --master local saveFile.py
+
+# check status in spark ui http://quickstart.cloudera:4040/
+
+# check saved file - there will be one part file
+hdfs dfs -ls  pyspark/testdepartments
+hdfs dfs -cat pyspark/testdepartments/*
+# delete tgt files for retry with other mode
+hdfs dfs -rm -R pyspark/testdepartments
+
+# running in local mode with 2 executor
+spark-submit --master local[2] saveFile.py
+
+# check status in spark ui http://quickstart.cloudera:4040/
+
+# check saved file - there will be 2 part files
+hdfs dfs -ls  pyspark/testdepartments
+hdfs dfs -cat pyspark/testdepartments/*
+
+# also try local[1]  and local[*]
