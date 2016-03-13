@@ -1,0 +1,37 @@
+#---------------reading file from various sources---------------#
+# working files:- if you do not have this file in hdfs, then run following sqoop cmd. this file will be used in the following exercise
+# hdfs dfs -ls /user/cloudera/sqoop_import/departments_txt
+# sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db --username retail_dba --password cloudera --table departments --target-dir /user/cloudera/sqoop_import/departments_txt  --as-textfile -m 1
+
+# prepare workspace and dataset
+mkdir -p ~/spark/dataset
+cd ~/spark/dataset
+hdfs dfs -get sqoop_import/departments_txt/part* ~/spark/dataset
+ls 
+cat part*
+
+# start pyspark with yarn master
+pyspark --master yarn
+# read hdfs file with path relative to the hdfs user (/user/cloudera)
+rddRel = sc.textFile("sqoop_import/departments_txt")
+for r in rddRel.collect():
+    print r
+
+# read hdfs file with absolute path (with hdfs protocol) to the hdfs folder
+# (hdfs://quickstart.cloudera:8020/user/cloudera/sqoop_import/departments_txt)
+rddAbs = sc.textFile("hdfs://quickstart.cloudera:8020/user/cloudera/sqoop_import/departments_txt")
+for r in rddAbs.collect():
+    print r
+
+# read local file with relative path to the local folder (~/spark/dataset)
+# !!! it will fail and throw error as spark search it relative to hdfs user folder /user/cloudera
+rddLocRel = sc.textFile("~/spark/dataset")
+for r in rddLocRel.collect():
+    print r
+
+# read local file with absolute path (with protocol) to the local folder (file:///home/cloudera/spark/dataset)
+rddLocAbs = sc.textFile("file:///home/cloudera/spark/dataset")
+for r in rddLocAbs.collect():
+    print r
+
+exit()
