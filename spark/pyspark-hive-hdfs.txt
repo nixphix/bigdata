@@ -1,0 +1,31 @@
+# will demonstrate how to import tables in hive to hdfs
+# prequisite: some table must be persent in hive store
+
+# ckeck if the sourece table is present and has data
+hive
+show databases;
+show tables;
+select * from departments;
+
+# launch pyspark with yarn as master 
+pyspark -master yarn
+
+# import Hive Context form pyspark.sql, create hive context by passing spark ctxt
+from pyspark.sql import HiveContext
+hc = HiveContext(sc)
+
+dept = hc.sql("select * from departments")   # query a table 
+for row in dept.collect():
+    print row.department_name, row.department_id
+
+ctas = hc.sql("create table dept as select * from departments") # no data will be returned
+ctas
+
+ctas = hc.sql("select * from dept")   # query the created table 
+ctas # prints the collection type 
+for row in ctas.collect():
+    print row.department_name, row.department_id
+
+droptbl = hc.sql("drop table dept")
+
+ctas = hc.sql("select * from dept")   # table dept not found error will be thrown
