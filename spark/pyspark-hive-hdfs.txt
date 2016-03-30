@@ -29,3 +29,12 @@ for row in ctas.collect():
 droptbl = hc.sql("drop table dept")
 
 ctas = hc.sql("select * from dept")   # table dept not found error will be thrown
+
+# create a table employees
+ct = hc.sql("create table if not exists employees(firstName string, lastName string)")
+
+# list the tables in hive store # hc.sql("show tables").collect()
+[row.tableName.encode('ascii') for row in hc.sql("show tables").collect()]
+
+# description of employees table in hive store # hc.sql("desc employees").collect()
+[(row.col_name.encode('ascii')+" "+row.data_type.encode('ascii')) for row in hc.sql("desc employees").collect()]
