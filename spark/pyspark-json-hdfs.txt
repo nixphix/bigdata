@@ -1,1 +1,4 @@
-#   
+# demonstrate how to import/export json file to/from hdfs
+
+# dowload the file 
+cd 
