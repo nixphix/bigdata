@@ -1,5 +1,24 @@
 # demonstrate how to import/export json file to/from hdfs
 
-# dowload the file 
+# download the file
 cd ~/spark/dataset
 wget --no-check-certificate https://raw.githubusercontent.com/nixphix/bigdata/master/spark/employees.json
+less employees.json
+
+# copy it to hdfs
+hdfs dfs -mkdir pyspark/json
+hdfs dfs -put employees.json pyspark/json
+hdfs dfs -ls pyspark/json
+
+# import sql context
+from pyspark import SQLContext
+sqlcon = SQLContext(sc)
+
+# read json file with sql context object
+empjson = sqlcon.jsonFile("/user/cloudera/pyspark/json/employees.json")
+type(empjson) # check the data type of he collection
+
+empjson.registerTempTable("employees")
+empdata = sqlcon.sql("select * from employees")
+for r in empdata.collect():
+    print r
