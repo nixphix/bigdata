@@ -1,1 +1,61 @@
-#   
+# demonstrate how to import/export json file to/from hdfs
+# ------ import json file ------ 
+
+# download the file
+cd ~/spark/dataset
+wget --no-check-certificate https://raw.githubusercontent.com/nixphix/bigdata/master/spark/employees.json
+less employees.json
+
+# copy it to hdfs
+hdfs dfs -mkdir pyspark/json
+hdfs dfs -put employees.json pyspark/json
+hdfs dfs -ls pyspark/json
+
+# import sql context
+from pyspark import SQLContext
+sqlcon = SQLContext(sc)
+
+# read json file with sql context object
+employeesjson = sqlcon.jsonFile("/user/cloudera/pyspark/json/employees.json")
+employeesjson.printSchema()
+
+# print imported data
+for row in employeesjson.collect():
+    print row
+    
+# registed json data as temp table for sql style querying
+employeesjson.registerTempTable("employees")
+employeesdata = sqlcon.sql("select * from employees")
+for row in employeesdata.collect():
+    print row
+
+# ------ export data to hdfs as json file ------ 
+
+# lets write the same data to another json file
+employeesdata.toJSON().saveAsTextFile("pyspark/json/new_employees_json")
+
+# check the file in hdfs
+hdfs dfs -ls pyspark/json/new_employees_json
+hdfs dfs -cat pyspark/json/new_employees_json/*
+hdfs dfs -cat pyspark/json/employees.json # source file
+
+# ------ export a text file source as json ------ 
+
+# import a text file and save it as json
+# choose a source from hdfs : hdfs dfs -ls
+depttxt = sc.textFile("sqoop_import/departments_txt")
+for row in depttxt.collect():
+    print row
+
+# format the data for json, unicode to ascii conversion and spliting the data into columns
+deptrdd = depttxt.map(lambda r:r.encode('ascii').split(',')).map(lambda (a,b): (int(a),b))
+
+# create dataframe using sqlcontext, to use toJSON() the dataset need to be in dataframe+
+deptdf = sqlcon.createDataFrame(deptrdd,["department_id","department_name"])
+deptdf.toJSON().saveAsTextFile("pyspark/departments_json")
+
+# verify the output in hdfs
+hdfs dfs -ls pyspark/departments_json
+hdfs dfs -cat pyspark/departments_json/*
+#hdfs dfs -rm -R pyspark/departments_json
+
