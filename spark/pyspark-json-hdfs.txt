@@ -15,10 +15,17 @@ from pyspark import SQLContext
 sqlcon = SQLContext(sc)
 
 # read json file with sql context object
-empjson = sqlcon.jsonFile("/user/cloudera/pyspark/json/employees.json")
-type(empjson) # check the data type of he collection
+employeesjson = sqlcon.jsonFile("/user/cloudera/pyspark/json/employees.json")
+type(employeesjson) # check the data type of he collection
 
-empjson.registerTempTable("employees")
-empdata = sqlcon.sql("select * from employees")
-for r in empdata.collect():
-    print r
+# print imported data
+for row in employeesjson.collect():
+    print row
+    
+# registed json data as temp table for sql style querying
+employeesjson.registerTempTable("employees")
+employeesdata = sqlcon.sql("select * from employees")
+for row in employeesdata.collect():
+    print row
+
+
