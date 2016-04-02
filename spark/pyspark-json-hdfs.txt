@@ -1,4 +1,5 @@
 # demonstrate how to import/export json file to/from hdfs
 
 # dowload the file 
-cd 
+cd ~/spark/dataset
+wget --no-check-certificate https://raw.githubusercontent.com/nixphix/bigdata/master/spark/employees.json
