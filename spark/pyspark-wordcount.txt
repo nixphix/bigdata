@@ -1,1 +1,4 @@
+# download data for wordcount 
 
+cd /home/cloudera/spark/dataset
+wget http://creativecommons.org/licenses/by-sa/4.0/legalcode.txt
