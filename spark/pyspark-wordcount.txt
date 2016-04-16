@@ -11,6 +11,21 @@ hdfs dfs -ls pyspark/wordcount
 hdfs dfs -cat pyspark/wordcount/legalcode.txt
 clear
 
+# import data in pyspark
+rdd = sc.textFile("pyspark/wordcount/legalcode.txt")
 
+# apply Flat Map transformation and check how it has tokenized the dataset
+rddflatmap = rdd.flatMap(lambda x:x.split(" "))
+for i in rddflatmap.take(10):
+    print i
 
+# apply Map transformation and check how it has tokenized the dataset
+rddmap = rdd.map(lambda x:x.split(" "))
+for i in rddmap.take(10):
+    print i
+# flatmap tokenizes the whole file whereas map tokenizes each line
+
+# create key value pairs to reduce the dataset
+rddflatmap_kv = rddflatmap.map(lambda x:(x,1))
+for i in rddflatmap_kv.take(10): print i
 
