@@ -1,4 +1,16 @@
-# download data for wordcount 
-
+# download data for wordcount
 cd /home/cloudera/spark/dataset
 wget http://creativecommons.org/licenses/by-sa/4.0/legalcode.txt
+
+# put the data into hdfs folder
+hdfs dfs -mkdir pyspark/wordcount
+hdfs dfs -put legalcode.txt pyspark/wordcount
+
+# check the input file
+hdfs dfs -ls pyspark/wordcount
+hdfs dfs -cat pyspark/wordcount/legalcode.txt
+clear
+
+
+
+
