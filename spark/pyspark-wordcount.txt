@@ -23,9 +23,24 @@ for i in rddflatmap.take(10):
 rddmap = rdd.map(lambda x:x.split(" "))
 for i in rddmap.take(10):
     print i
-# flatmap tokenizes the whole file whereas map tokenizes each line
+#### flatmap tokenizes the whole file whereas map tokenizes each line
 
 # create key value pairs to reduce the dataset
 rddflatmap_kv = rddflatmap.map(lambda x:(x,1))
-for i in rddflatmap_kv.take(10): print i
+for i in rddflatmap_kv.take(10):
+    print i
 
+# reduce key value pair by key
+rddWordCount = rddflatmap_kv.reduceByKey(lambda x,y:x+y)
+# print result
+for i in rddWordCount.collect(): print i
+
+# take top ten frequent words
+for i in rddWordCount.takeOrdered(10, key=lambda (k,v):-v): print i
+#### you wil find empty character at top of the list, this is because we specified split delimeter as space, when delimiter specified then consecutive delimiter will not be consedered as one. Refer: https://docs.python.org/2/library/stdtypes.html?#str.split
+
+# word count with white space as delimiter
+rddWC = rdd.flatMap(lambda x:x.split()).map(lambda x:(x,1)).reduceByKey(lambda x,y:x+y)
+
+# take top ten frequent words
+for i in rddWC.takeOrdered(10, key=lambda (k,v):-v): print i
