@@ -1,1 +1,12 @@
+# join two dataset in pyspark
+# check if dataset is available (created in previous excercise)
+hdfs dfs -ls sqoop_import/orders
+# columns 
+hdfs dfs -tail sqoop_import/orders/part-m-00000
+
+hdfs dfs -ls sqoop_import/order_items
+hdfs dfs -tail sqoop_import/order_items/part-m-00000
+
+
+
 
