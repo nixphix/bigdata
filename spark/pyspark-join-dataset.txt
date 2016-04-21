@@ -31,16 +31,15 @@ for i in orderItemsRDD.take(5):
     print i
 
 # order id is the second column in order items table, parse it into int for joining datasets
-orderItemsParsedRDD = orderItemsRDD.map(lambda x:(int(x.split(",")[1]), x))
+orderItemsParsedRDD = orderItemsRDD.map(lambda x:(int(x.split(",")[1]), float(x.split(",")[4])))
 for i in orderItemsParsedRDD.take(5):
     print i
 
 # join both dataset
-ordersJoinOrderItemsRDD = orderItemsRDD.join(ordersRDD)
+ordersJoinOrderItemsRDD = orderItemsParsedRDD.join(ordersParsedRDD)
 for i in ordersJoinOrderItemsRDD.take(5):
     print i
-
-
-
-
-
+    
+    
+    
+    
