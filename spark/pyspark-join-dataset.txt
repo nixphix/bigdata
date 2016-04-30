@@ -21,7 +21,7 @@ for i in ordersRDD.take(5):
     print i
 
 # take order id and order date, parser the order id into int
-ordersParsedRDD = ordersRDD.map(lambda x:(int(x.split(",")[0]),x.split(",")[1]))
+ordersParsedRDD = ordersRDD.map(lambda x:(int(x.split(",")[0]),x))
 for i in ordersParsedRDD.take(5): 
     print i
 
@@ -31,7 +31,7 @@ for i in orderItemsRDD.take(5):
     print i
 
 # order id is the second column in order items table, parse it into int for joining datasets
-orderItemsParsedRDD = orderItemsRDD.map(lambda x:(int(x.split(",")[1]), float(x.split(",")[4])))
+orderItemsParsedRDD = orderItemsRDD.map(lambda x:(int(x.split(",")[1]),x))
 for i in orderItemsParsedRDD.take(5):
     print i
 
@@ -39,7 +39,9 @@ for i in orderItemsParsedRDD.take(5):
 ordersJoinOrderItemsRDD = orderItemsParsedRDD.join(ordersParsedRDD)
 for i in ordersJoinOrderItemsRDD.take(5):
     print i
-    
-    
-    
-    
+
+# extract order sub total and date from dataset
+#(32768, (u'81958,32768,1073,1,199.99,199.99', u'32768,2014-02-12 00:00:00.0,1900,PENDING_PAYMENT'))
+joinDataRDD = ordersJoinOrderItemsRDD.map(lambda x:(x[1][1].split(",")[1],float(x[1][0].split(",")[4])))
+for i in joinDataRDD.take(5):
+    print i
