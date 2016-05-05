@@ -46,7 +46,15 @@ joinDataRDD = ordersJoinOrderItemsRDD.map(lambda x:(x[1][1].split(",")[1],float(
 for i in joinDataRDD.take(5):
     print i
 
+#---------------quick start------------#
+ordersRDD = sc.textFile("/user/cloudera/sqoop_import/orders/").map(lambda x:(int(x.split(",")[0]),x))
+orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/").map(lambda x:(int(x.split(",")[1]),x))
+ordersJoinOrderItemsRDD = orderItemsRDD.join(ordersRDD)
+revenuePerOrderPerDay = ordersJoinOrderItemsRDD.map(lambda x:(x[1][1].split(",")[1],float(x[1][0].split(",")[4])))
+for i in revenuePerOrderPerDay.take(5):
+    print i
 #--------------------------------------#
+
 # check order count in orders and order_items table
 #sqoop 68883
 sqoop eval \
