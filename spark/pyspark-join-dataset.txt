@@ -47,6 +47,7 @@ for i in joinDataRDD.take(5):
     print i
 
 #---------------quick start------------#
+# execute commands below to proceed to next section
 ordersRDD = sc.textFile("/user/cloudera/sqoop_import/orders/").map(lambda x:(int(x.split(",")[0]),x))
 orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/").map(lambda x:(int(x.split(",")[1]),x))
 ordersJoinOrderItemsRDD = orderItemsRDD.join(ordersRDD)
@@ -56,25 +57,30 @@ for i in revenuePerOrderPerDay.take(5):
 #--------------------------------------#
 
 # check order count in orders and order_items table
-#sqoop 68883
+#sqoop 
+# count 68883
 sqoop eval \
 --connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
 --username retail_dba -P \
 --query "select count(distinct order_id) from orders"
 
 #spark
-ordersParsedRDD.map(lambda x:x[0]).distinct().count()
+# count 68883
+ordersRDD.map(lambda x:x[0]).distinct().count()
 
-#sqoop
+#sqoop  
+# count 57431
 sqoop eval \
 --connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
 --username retail_dba -password cloudera \
 --query "select count(distinct order_item_order_id) from order_items"
 
 #spark
-orderItemsParsedRDD.map(lambda x:x[0]).distinct().count()
+# count 57431
+orderItemsRDD.map(lambda x:x[0]).distinct().count()
  
-
+# find number of orders per day
+for i in ordersJoinOrderItemsRDD
 
 
 
