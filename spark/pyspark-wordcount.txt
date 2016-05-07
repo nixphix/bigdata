@@ -1,0 +1,46 @@
+# download data for wordcount
+cd /home/cloudera/spark/dataset
+wget http://creativecommons.org/licenses/by-sa/4.0/legalcode.txt
+
+# put the data into hdfs folder
+hdfs dfs -mkdir pyspark/wordcount
+hdfs dfs -put legalcode.txt pyspark/wordcount
+
+# check the input file
+hdfs dfs -ls pyspark/wordcount
+hdfs dfs -cat pyspark/wordcount/legalcode.txt
+clear
+
+# import data in pyspark
+rdd = sc.textFile("pyspark/wordcount/legalcode.txt")
+
+# apply Flat Map transformation and check how it has tokenized the dataset
+rddflatmap = rdd.flatMap(lambda x:x.split(" "))
+for i in rddflatmap.take(10):
+    print i
+
+# apply Map transformation and check how it has tokenized the dataset
+rddmap = rdd.map(lambda x:x.split(" "))
+for i in rddmap.take(10):
+    print i
+#### flatmap tokenizes the whole file whereas map tokenizes each line
+
+# create key value pairs to reduce the dataset
+rddflatmap_kv = rddflatmap.map(lambda x:(x,1))
+for i in rddflatmap_kv.take(10):
+    print i
+
+# reduce key value pair by key
+rddWordCount = rddflatmap_kv.reduceByKey(lambda x,y:x+y)
+# print result
+for i in rddWordCount.collect(): print i
+
+# take top ten frequent words
+for i in rddWordCount.takeOrdered(10, key=lambda (k,v):-v): print i
+#### you wil find empty character at top of the list, this is because we specified split delimeter as space, when delimiter specified then consecutive delimiter will not be consedered as one. Refer: https://docs.python.org/2/library/stdtypes.html?#str.split
+
+# word count with white space as delimiter
+rddWC = rdd.flatMap(lambda x:x.split()).map(lambda x:(x,1)).reduceByKey(lambda x,y:x+y)
+
+# take top ten frequent words
+for i in rddWC.takeOrdered(10, key=lambda (k,v):-v): print i

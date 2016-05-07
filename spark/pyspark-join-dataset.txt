@@ -1,0 +1,88 @@
+# join two dataset in pyspark
+# check if datasets are available (created in previous excercise)
+
+hdfs dfs -ls sqoop_import/orders
+# columns metadata 
+# (order_id int), (order_date string), (order_customer_id int), (order_status string)
+hdfs dfs -tail sqoop_import/orders/part-m-00000
+
+hdfs dfs -ls sqoop_import/order_items
+# columns metadata 
+# (order_item_id int), (order_item_order_id int), (order_item_product_id int), (order_item_quantity tinyint), (order_item_subtotal double), (order_item_product_price double)
+hdfs dfs -tail sqoop_import/order_items/part-m-00000
+
+# find daily trunover
+# start pyspark shell
+pyspark -master yarn
+
+# import orders table and verify data 
+ordersRDD = sc.textFile("/user/cloudera/sqoop_import/orders/")
+for i in ordersRDD.take(5):
+    print i
+
+# take order id and order date, parser the order id into int
+ordersParsedRDD = ordersRDD.map(lambda x:(int(x.split(",")[0]),x))
+for i in ordersParsedRDD.take(5): 
+    print i
+
+# import order_items table and verify data 
+orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/")
+for i in orderItemsRDD.take(5):
+    print i
+
+# order id is the second column in order items table, parse it into int for joining datasets
+orderItemsParsedRDD = orderItemsRDD.map(lambda x:(int(x.split(",")[1]),x))
+for i in orderItemsParsedRDD.take(5):
+    print i
+
+# join both dataset
+ordersJoinOrderItemsRDD = orderItemsParsedRDD.join(ordersParsedRDD)
+for i in ordersJoinOrderItemsRDD.take(5):
+    print i
+
+# extract order sub total and date from dataset
+#(32768, (u'81958,32768,1073,1,199.99,199.99', u'32768,2014-02-12 00:00:00.0,1900,PENDING_PAYMENT'))
+joinDataRDD = ordersJoinOrderItemsRDD.map(lambda x:(x[1][1].split(",")[1],float(x[1][0].split(",")[4])))
+for i in joinDataRDD.take(5):
+    print i
+
+#---------------quick start------------#
+# execute commands below to proceed to next section
+ordersRDD = sc.textFile("/user/cloudera/sqoop_import/orders/").map(lambda x:(int(x.split(",")[0]),x))
+orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/").map(lambda x:(int(x.split(",")[1]),x))
+ordersJoinOrderItemsRDD = orderItemsRDD.join(ordersRDD)
+revenuePerOrderPerDay = ordersJoinOrderItemsRDD.map(lambda x:(x[1][1].split(",")[1],float(x[1][0].split(",")[4])))
+for i in revenuePerOrderPerDay.take(5):
+    print i
+#--------------------------------------#
+
+# check order count in orders and order_items table
+#sqoop 
+# count 68883
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba -P \
+--query "select count(distinct order_id) from orders"
+
+#spark
+# count 68883
+ordersRDD.map(lambda x:x[0]).distinct().count()
+
+#sqoop  
+# count 57431
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba -password cloudera \
+--query "select count(distinct order_item_order_id) from order_items"
+
+#spark
+# count 57431
+orderItemsRDD.map(lambda x:x[0]).distinct().count()
+ 
+# find number of orders per day
+for i in ordersJoinOrderItemsRDD
+
+
+
+
+
