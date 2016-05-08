@@ -51,7 +51,7 @@ for i in joinDataRDD.take(5):
 ordersRDD = sc.textFile("/user/cloudera/sqoop_import/orders/").map(lambda x:(int(x.split(",")[0]),x))
 orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/").map(lambda x:(int(x.split(",")[1]),x))
 ordersJoinOrderItemsRDD = orderItemsRDD.join(ordersRDD)
-revenuePerOrderPerDay = ordersJoinOrderItemsRDD.map(lambda x:(x[1][1].split(",")[1],float(x[1][0].split(",")[4])))
+revenuePerOrderPerDay = ordersJoinOrderItemsRDD.map(lambda x:(x[1][1].split(",")[1],float(x[1][0].split(",")[4]))).reduceByKey(lambda a,b:a+b)
 for i in revenuePerOrderPerDay.take(5):
     print i
 #--------------------------------------#
@@ -80,9 +80,28 @@ sqoop eval \
 orderItemsRDD.map(lambda x:x[0]).distinct().count()
  
 # find number of orders per day
-for i in ordersJoinOrderItemsRDD
+for i in ordersJoinOrderItemsRDD.take(2):
+    print i
+ordersPerDay = ordersJoinOrderItemsRDD.map(lambda x: (x[1][1].split(',')[1]+","+str(x[0]))).distinct()
+for i in ordersPerDay.take(10):
+    print i
+ordersPerDay.count() # 57431
+ordersPerDayParsedRDD = ordersPerDay.map(lambda x:(x.split(",")[0],1))
 
+totalOrdersPerDay = ordersPerDayParsedRDD.reduceByKey(lambda a,b:a+b)
+for i in totalOrdersPerDay.take(10):
+    print i
 
+# join revenu and total orders dataset
+revenuePerOrderPerDay.count()
+totalOrdersPerDay.count()
+finalJoinRDD = totalOrdersPerDay.join(revenuePerOrderPerDay).sortByKey()
+for i in finalJoinRDD.take(5):
+    print i
 
+# validate with sqoop
+sqoop eval -connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba -password cloudera \
 
-
+--query "desc order_items" 
+--query "select count(distinct o.order_id), sum() from orders o join order_items oi on o.order_id=oi.order_item_order_id"
