@@ -1,0 +1,17 @@
+# open hive consol
+hive
+show databases;
+use default;
+show tables;
+desc orders;
+desc order_items;
+select * from orders limit 10;
+select * from order_items limit 10;
+
+# start pyspark with yarn as master
+pyspark -master yarn
+from pyspark.sql import HiveContext
+hc =  HiveContext(sc)
+
+hc.sql("show databases")
+order_cnt = hc.sql("select count(1) from orders")
