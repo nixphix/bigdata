@@ -1,4 +1,16 @@
-# open hive consol
+# data preparation
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username=retail_dba \
+--password=cloudera \
+--table orders \
+--hive-import \
+--hive-overwrite \
+--create-hive-table \
+--outdir java_files \
+-m 1
+
+# open hive console
 hive
 show databases;
 use default;
@@ -12,6 +24,13 @@ select * from order_items limit 10;
 pyspark -master yarn
 from pyspark.sql import HiveContext
 hc =  HiveContext(sc)
-
 hc.sql("show databases")
-order_cnt = hc.sql("select count(1) from orders")
+
+orders_cnt = hc.sql("select count(1) from orders")
+orders_cnt.collect()
+
+ordItems_cnt = hc.sql("select count(1) from order_items")
+ordItems_cnt.collect()
+
+joinOrdItems = hc.sql("select ")
+
