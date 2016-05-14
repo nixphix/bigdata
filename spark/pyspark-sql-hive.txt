@@ -1,4 +1,12 @@
 # data preparation
+hdfs dfs -ls /user/hive/warehouse
+hdfs dfs -rm -R /user/hive/warehouse/categories
+hdfs dfs -rm -R 
+hdfs dfs -rm -R 
+hdfs dfs -rm -R 
+hdfs dfs -rm -R 
+hdfs dfs -rm -R 
+
 sqoop import \
 --connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
 --username=retail_dba \
