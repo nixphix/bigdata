@@ -33,4 +33,3 @@ ordItems_cnt = hc.sql("select count(1) from order_items")
 ordItems_cnt.collect()
 
 joinOrdItems = hc.sql("select ")
-
