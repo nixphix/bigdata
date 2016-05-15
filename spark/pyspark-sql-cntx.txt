@@ -1,0 +1,28 @@
+from pyspark.sql import SQLContext, Row
+sqlc = SQLContext(sc)
+sqlc.sql("set spark.sql.shuffle.partitions=10")
+
+ordersRDD = sc.textFile("/user/cloudera/sqoop_import/orders/").map(lambda x:x.split(","))
+# (order_id int), (order_date string), (order_customer_id int), (order_status string)
+ordersTbl = ordersRDD.map(lambda x: Row(order_id=int(x[0]),order_date=x[1],order_customer_id=int(x[2]),order_status=x[3]))
+for i in ordersTbl.take(5): print i
+ordersSchema = sqlc.inferSchema(ordersTbl)
+ordersSchema.registerTempTable("orders")
+
+orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/").map(lambda x:x.split(","))
+# (order_item_id int), (order_item_order_id int), (order_item_product_id int), (order_item_quantity tinyint), 
+#(order_item_subtotal double), (order_item_product_price double)
+orderItemsTbl = orderItemsRDD.map(lambda x: Row(order_item_id=int(x[0]),order_item_order_id=int(x[1]),order_item_product_id=int(x[2]),order_item_quantity=int(x[3]), order_item_subtotal=float(x[4]), order_item_product_price=float(x[5])))
+for i in orderItemsTbl.take(5): print i
+orderItemsSchema = sqlc.inferSchema(orderItemsTbl)
+orderItemsSchema.registerTempTable("order_items")
+
+joinData = sqlc.sql("select order_date, count(distinct order_id), sum(order_item_subtotal) from orders o join order_items oi on o.order_id=oi.order_item_order_id group by order_date order by order_date")
+for i in joinData.collect(): print i
+
+Row(order_date=u'2014-07-19 00:00:00.0', c1=192, c2=108439.13999999994)
+Row(order_date=u'2014-07-20 00:00:00.0', c1=242, c2=141499.79999999987)
+Row(order_date=u'2014-07-21 00:00:00.0', c1=202, c2=121102.76999999995)
+Row(order_date=u'2014-07-22 00:00:00.0', c1=117, c2=73134.359999999986)
+Row(order_date=u'2014-07-23 00:00:00.0', c1=138, c2=87990.379999999976)
+Row(order_date=u'2014-07-24 00:00:00.0', c1=165, c2=97076.339999999953)
