@@ -1,0 +1,103 @@
+# data preparation
+hdfs dfs -ls /user/hive/warehouse
+hdfs dfs -rm -R /user/hive/warehouse/categories
+hdfs dfs -rm -R /user/hive/warehouse/customers
+hdfs dfs -rm -R /user/hive/warehouse/departments
+hdfs dfs -rm -R /user/hive/warehouse/employees
+hdfs dfs -rm -R /user/hive/warehouse/orders
+hdfs dfs -rm -R /user/hive/warehouse/products
+hdfs dfs -ls /user/hive/warehouse
+
+hive
+drop table categories;
+drop table customers;
+drop table departments;
+drop table employees;
+drop table orders;
+drop table products;
+
+hdfs dfs -ls
+hdfs dfs -rm -R /user/cloudera/categories
+hdfs dfs -rm -R /user/cloudera/customers
+hdfs dfs -rm -R /user/cloudera/departments
+hdfs dfs -rm -R /user/cloudera/employees
+hdfs dfs -rm -R /user/cloudera/orders
+hdfs dfs -rm -R /user/cloudera/products
+
+sqoop import-all-tables \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username=retail_dba \
+--password=cloudera \
+--direct \
+--hive-import \
+--hive-overwrite \
+--create-hive-table \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+--outdir java_files \
+-m 1
+
+# open hive console
+hive
+show databases;
+use default;
+show tables;
+desc orders;
+desc order_items;
+select * from orders limit 10;
+select * from order_items limit 10;
+
+# start pyspark with yarn as master
+pyspark -master yarn
+from pyspark.sql import HiveContext
+hc =  HiveContext(sc)
+hc.sql("show databases")
+
+orders_cnt = hc.sql("select count(1) from orders")
+orders_cnt.collect()
+#68883
+
+ordItems_cnt = hc.sql("select count(1) from order_items")
+ordItems_cnt.collect()
+#172198
+
+hive> desc orders;
+OK
+order_id                int
+order_date              string
+order_customer_id       int
+order_status            string
+Time taken: 0.187 seconds, Fetched: 4 row(s)
+hive> desc order_items;
+OK
+order_item_id           int
+order_item_order_id     int
+order_item_product_id   int
+order_item_quantity     tinyint
+order_item_subtotal     double
+order_item_product_price        double
+Time taken: 0.216 seconds, Fetched: 6 row(s)
+
+select o.order_date, count(distinct o.order_id), sum(io.order_item_subtotal) 
+from orders o join order_items io on o.order_id = io.order_item_order_id
+group by order_date
+order by order_date;
+
+2014-07-09 00:00:00     123     73263.46000000004
+2014-07-10 00:00:00     159     96463.85
+2014-07-11 00:00:00     119     71334.14000000003
+2014-07-12 00:00:00     146     79349.85999999999
+2014-07-13 00:00:00     181     104490.17000000001
+2014-07-14 00:00:00     137     77125.54000000001
+2014-07-15 00:00:00     230     136902.59000000003
+2014-07-16 00:00:00     126     77753.18000000005
+2014-07-17 00:00:00     137     78295.27000000003
+2014-07-18 00:00:00     178     102459.75000000001
+2014-07-19 00:00:00     192     108439.14000000014
+2014-07-20 00:00:00     242     141499.80000000013
+2014-07-21 00:00:00     202     121102.76999999993
+2014-07-22 00:00:00     117     73134.36000000002
+2014-07-23 00:00:00     138     87990.38
+2014-07-24 00:00:00     165     97076.34000000005
+Time taken: 110.822 seconds, Fetched: 364 row(s)
+
