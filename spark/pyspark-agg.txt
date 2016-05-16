@@ -1,0 +1,24 @@
+pyspark -master local
+
+ordersRDD = sc.textFile("/user/cloudera/sqoop_import/orders/")
+ordersRDD.count()
+
+orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/").map(lambda x:x.split(","))
+orderItemsRDD.take(1)
+# 5th column is subtotal
+orderItemsRDD.map(lambda x: float(x[4])).reduce(lambda x,y:x+y)
+#34322619.930029646
+
+# find max product price
+import re
+productRDD = sc.textFile("/user/cloudera/sqoop_import/products/")
+sepCnt = productRDD.map(lambda x:(len(re.findall(",",x)),x))
+max(sepCnt.collect())
+(6, u'685,31,TaylorMade SLDR Irons - (Steel) 4-PW, AW,,899.99,http://images.acmesports.sports/TaylorMade+SLDR+Irons+-+%28Steel%29+4-PW%2C+AW')
+min(sepCnt.collect())
+(5, u'1,2,Quest Q64 10 FT. x 10 FT. Slant Leg Instant U,,59.98,http://images.acmesports.sports/Quest+Q64+10+FT.+x+10+FT.+Slant+Leg+Instant+Up+Canopy')
+minCnt = min(sepCnt.collect()[0])
+
+deviantDataRDD = sepCnt.zipWithIndex().filter(lambda x:x[0][0]>minCnt)
+for i in deviantDataRDD.collect(): print i
+#((6, u'685,31,TaylorMade SLDR Irons - (Steel) 4-PW, AW,,899.99,http://images.acmesports.sports/TaylorMade+SLDR+Irons+-+%28Steel%29+4-PW%2C+AW'),684)
