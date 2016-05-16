@@ -28,6 +28,24 @@ sepCnt.count() - goodDataRDD.count()
 goodDataRDD.take(1)
 goodDataRDD.map(lambda x:(float(x[4]),x[2])).reduce(lambda x,y: x if(y[0]<x[0]) else y)
 # (1999.99, u'SOLE E35 Elliptical')
+goodDataRDD.map(lambda x:(float(x[4]),x[2])).reduce(lambda x,y: x if(y[0]>x[0]) else y)
+# (0.0, u"Nike Men's Hypervenom Phantom Premium FG Socc")
 
 #---------------------------------------#
+
+orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/")
+orderItemsRDD.take(1)
+# (order_item_id int), (order_item_order_id int), (order_item_product_id int), (order_item_quantity tinyint), 
+#(order_item_subtotal double), (order_item_product_price double)
+extractData = orderItemsRDD.map(lambda x: x.split(",")).map(lambda x:(int(x[1]),float(x[4])))
+totalRevenu = extractData.map(lambda x:x[1]).reduce(lambda x,y:x+y)
+#34322619.930029646
+totalOrders = extractData.map(lambda x:x[0]).distinct().count()
+#57431
+totalRevenu/totalOrders
+#597.632287963463
+
+#---------------------------------------#
+
+
 
