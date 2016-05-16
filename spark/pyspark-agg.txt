@@ -22,3 +22,12 @@ minCnt = min(sepCnt.collect()[0])
 deviantDataRDD = sepCnt.zipWithIndex().filter(lambda x:x[0][0]>minCnt)
 for i in deviantDataRDD.collect(): print i
 #((6, u'685,31,TaylorMade SLDR Irons - (Steel) 4-PW, AW,,899.99,http://images.acmesports.sports/TaylorMade+SLDR+Irons+-+%28Steel%29+4-PW%2C+AW'),684)
+
+goodDataRDD = sepCnt.zipWithIndex().filter(lambda x:x[0][0]==minCnt).map(lambda x: x[0][1].split(","))
+sepCnt.count() - goodDataRDD.count()
+goodDataRDD.take(1)
+goodDataRDD.map(lambda x:(float(x[4]),x[2])).reduce(lambda x,y: x if(y[0]<x[0]) else y)
+# (1999.99, u'SOLE E35 Elliptical')
+
+#---------------------------------------#
+
