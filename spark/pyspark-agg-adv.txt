@@ -5,5 +5,37 @@ orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/").map(lamb
 joinData = orderItemsRDD.join(ordersRDD).map(lambda x:(x[1][1],x[1][0]))
 
 # agg subtotal by day
-redAgg = joinData.reduceByKey()
+revenuPerDayRED = joinData.reduceByKey(lambda acc,val:acc+val)
+for i in revenuPerDayRED.sortByKey().take(10): print i
+(u'2013-07-25 00:00:00.0', 68153.829999999973)
+(u'2013-07-26 00:00:00.0', 136520.17000000007)
+(u'2013-07-27 00:00:00.0', 101074.34)
+(u'2013-07-28 00:00:00.0', 87123.079999999987)
+(u'2013-07-29 00:00:00.0', 137287.09000000005)
+(u'2013-07-30 00:00:00.0', 102745.62000000002)
+(u'2013-07-31 00:00:00.0', 131878.06000000006)
+(u'2013-08-01 00:00:00.0', 129001.62000000004)
+(u'2013-08-02 00:00:00.0', 109347.00000000001)
+(u'2013-08-03 00:00:00.0', 95266.889999999985)
 
+revenuPerDayAGG = joinData.aggregateByKey(0,lambda acc,val:acc+val,lambda x,y:x+y)
+for i in revenuPerDayAGG.sortByKey().take(10): print i
+
+(u'2013-07-25 00:00:00.0', 68153.829999999973)
+(u'2013-07-26 00:00:00.0', 136520.17000000007)
+(u'2013-07-27 00:00:00.0', 101074.34)
+(u'2013-07-28 00:00:00.0', 87123.079999999987)
+(u'2013-07-29 00:00:00.0', 137287.09000000005)
+(u'2013-07-30 00:00:00.0', 102745.62000000002)
+(u'2013-07-31 00:00:00.0', 131878.06000000006)
+(u'2013-08-01 00:00:00.0', 129001.62000000004)
+(u'2013-08-02 00:00:00.0', 109347.00000000001)
+(u'2013-08-03 00:00:00.0', 95266.889999999985)
+
+ordersRDD = sc.textFile("/user/cloudera/sqoop_import/orders/").map(lambda x:(x.split(",")[0],x))
+orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/").map(lambda x:(x.split(",")[1],x))
+joinData = orderItemsRDD.join(ordersRDD)
+joinMap = joinData.map(lambda x: ((x[1][1].split(",")[1],x[0]),float(x[1][0].split(",")[4])))
+
+#Agg order subtotal
+revenuPerOrderPerDay = joinMap.reduceByKey()
