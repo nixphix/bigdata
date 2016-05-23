@@ -12,11 +12,6 @@ for i in revenuPerDayRED.sortByKey().take(10): print i
 (u'2013-07-27 00:00:00.0', 101074.34)
 (u'2013-07-28 00:00:00.0', 87123.079999999987)
 (u'2013-07-29 00:00:00.0', 137287.09000000005)
-(u'2013-07-30 00:00:00.0', 102745.62000000002)
-(u'2013-07-31 00:00:00.0', 131878.06000000006)
-(u'2013-08-01 00:00:00.0', 129001.62000000004)
-(u'2013-08-02 00:00:00.0', 109347.00000000001)
-(u'2013-08-03 00:00:00.0', 95266.889999999985)
 
 revenuPerDayAGG = joinData.aggregateByKey(0,lambda acc,val:acc+val,lambda x,y:x+y)
 for i in revenuPerDayAGG.sortByKey().take(10): print i
@@ -26,16 +21,34 @@ for i in revenuPerDayAGG.sortByKey().take(10): print i
 (u'2013-07-27 00:00:00.0', 101074.34)
 (u'2013-07-28 00:00:00.0', 87123.079999999987)
 (u'2013-07-29 00:00:00.0', 137287.09000000005)
-(u'2013-07-30 00:00:00.0', 102745.62000000002)
-(u'2013-07-31 00:00:00.0', 131878.06000000006)
-(u'2013-08-01 00:00:00.0', 129001.62000000004)
-(u'2013-08-02 00:00:00.0', 109347.00000000001)
-(u'2013-08-03 00:00:00.0', 95266.889999999985)
 
 ordersRDD = sc.textFile("/user/cloudera/sqoop_import/orders/").map(lambda x:(x.split(",")[0],x))
 orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/").map(lambda x:(x.split(",")[1],x))
 joinData = orderItemsRDD.join(ordersRDD)
 joinMap = joinData.map(lambda x: ((x[1][1].split(",")[1],x[0]),float(x[1][0].split(",")[4])))
 
+revPerOrderPerDayRED = joinMap.reduceByKey(lambda a,b:a+b)
+revPerDayMap = revPerOrderPerDayRED.map(lambda x:(x[0][0],x[1]))
+
 #Agg order subtotal
-revenuPerOrderPerDay = joinMap.reduceByKey()
+revPerDayCOMB = revPerDayMap.combineByKey(lambda x:(x,1),lambda acc,val:(acc[0]+val,acc[1]+1),lambda x,y:(round(x[0]+y[0]),x[1]+y[1]))
+revPerDayAGG = revPerDayMap.aggregateByKey((0.0,0),lambda acc,val:(acc[0]+val,acc[1]+1),lambda x,y:(round(x[0]+y[0]),x[1]+y[1]))
+
+avgRevCOMB = revPerDayCOMB.map(lambda x: (x[0],x[1][0]/x[1][1]))
+avgRevAGG = revPerDayCOMB.map(lambda x: (x[0],x[1][0]/x[1][1]))
+
+for i in avgRevCOMB.sortByKey().collect(): print i
+
+(u'2014-07-20 00:00:00.0', 584.71074380165294)
+(u'2014-07-21 00:00:00.0', 599.51980198019805)
+(u'2014-07-22 00:00:00.0', 625.07692307692309)
+(u'2014-07-23 00:00:00.0', 637.6159420289855)
+(u'2014-07-24 00:00:00.0', 588.33939393939397)
+
+for i in avgRevAGG.sortByKey().collect(): print i
+
+(u'2014-07-20 00:00:00.0', 584.71074380165294)
+(u'2014-07-21 00:00:00.0', 599.51980198019805)
+(u'2014-07-22 00:00:00.0', 625.07692307692309)
+(u'2014-07-23 00:00:00.0', 637.6159420289855)
+(u'2014-07-24 00:00:00.0', 588.33939393939397)
