@@ -1,1 +1,9 @@
+pyspark -master local
+
+ordersRDD = sc.textFile("/user/cloudera/sqoop_import/orders/").map(lambda x:(x.split(",")[0],x.split(",")[1]))
+orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/").map(lambda x:(x.split(",")[1],float(x.split(",")[4])))
+joinData = orderItemsRDD.join(ordersRDD).map(lambda x:(x[1][1],x[1][0]))
+
+# agg subtotal by day
+redAgg = joinData.reduceByKey()
 
