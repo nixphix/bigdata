@@ -1,1 +1,44 @@
+pyspark -master local
 
+ordersRDD = sc.textFile("/user/cloudera/sqoop_import/orders/")
+print "\n".join(ordersRDD.map(lambda x:x.split(",")[3]).distinct().sortBy(lambda x:x).collect())
+
+# output
+CANCELED
+CLOSED
+COMPLETE
+ON_HOLD
+PAYMENT_REVIEW
+PENDING
+PENDING_PAYMENT
+PROCESSING
+SUSPECTED_FRAUD
+
+for i in ordersRDD.map(lambda x:(x.split(",")[3],1)).reduceByKey(lambda x,y:x+y).sortByKey().collect(): print i
+
+# output
+(u'CANCELED', 1428)
+(u'CLOSED', 7556)
+(u'COMPLETE', 22899)
+(u'ON_HOLD', 3798)
+(u'PAYMENT_REVIEW', 729)
+(u'PENDING', 7610)
+(u'PENDING_PAYMENT', 15030)
+(u'PROCESSING', 8275)
+(u'SUSPECTED_FRAUD', 1558)
+
+# filter canceled orders and take count
+ordersRDD.filter(lambda x:x.split(",")[3]=='CANCELED').count()
+# output 1428
+
+# filter PENDING orders and take count
+ordersRDD.filter(lambda x:x.split(",")[3]=='PENDING').count()
+# output 7610
+
+# filter all pending orders (PENDING and PENDING_PAYMENT) and take count
+ordersRDD.filter(lambda x:'PENDING' in x.split(",")[3]).count()
+# output 22640
+
+# filter all orders in payment stage (PAYMENT_REVIEW and PENDING_PAYMENT) and take count
+ordersRDD.filter(lambda x:'PAYMENT' in x.split(",")[3]).count()
+# output 15759
