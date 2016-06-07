@@ -42,3 +42,18 @@ ordersRDD.filter(lambda x:'PENDING' in x.split(",")[3]).count()
 # filter all orders in payment stage (PAYMENT_REVIEW and PENDING_PAYMENT) and take count
 ordersRDD.filter(lambda x:'PAYMENT' in x.split(",")[3]).count()
 # output 15759
+
+# filter by date & time
+# import necessary package to convert string to date data type, data date format: 2013-07-25 00:00:00.0 -> "%Y-%m-%d %H:%M:%S"
+# Ref: https://docs.python.org/2/library/datetime.html#strftime-strptime-behavior
+
+from datetime import datetime
+ordersByDateRDD = ordersRDD.map(lambda x:(datetime.strptime(x.split(",")[1],"%Y-%m-%d %H:%M:%S.%f"),x))
+
+ordersByDateRDD.max(lambda x:x[0])
+# output
+(datetime.datetime(2014, 7, 24, 0, 0), u'57595,2014-07-24 00:00:00.0,9102,COMPLETE')
+
+ordersByDateRDD.min(lambda x:x[0])
+# output
+(datetime.datetime(2013, 7, 25, 0, 0), u'1,2013-07-25 00:00:00.0,11599,CLOSED')
