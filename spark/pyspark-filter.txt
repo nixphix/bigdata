@@ -57,3 +57,9 @@ ordersByDateRDD.max(lambda x:x[0])
 ordersByDateRDD.min(lambda x:x[0])
 # output
 (datetime.datetime(2013, 7, 25, 0, 0), u'1,2013-07-25 00:00:00.0,11599,CLOSED')
+
+# filter dataset by date
+ordersByDateRDD.filter(lambda x:x[0]>datetime.strptime("01012016","%d%m%Y")).count()
+ordersByDateRDD.filter(lambda x:x[0]>datetime.strptime("01012013","%d%m%Y")).count()
+
+ordersByDateRDD.filter(lambda x:x[0] == datetime(2014,01,01,0,0)).count()
