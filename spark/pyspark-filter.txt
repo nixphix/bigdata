@@ -63,3 +63,15 @@ ordersByDateRDD.filter(lambda x:x[0]>datetime.strptime("01012016","%d%m%Y")).cou
 ordersByDateRDD.filter(lambda x:x[0]>datetime.strptime("01012013","%d%m%Y")).count()
 
 ordersByDateRDD.filter(lambda x:x[0] == datetime(2014,01,01,0,0)).count()
+
+# filter by billed amount
+orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/").map(lambda x:(int(x.split(",")[1]),float(x.split(",")[4])))
+ordersIDRDD = ordersRDD.map(lambda x:(int(x.split(",")[0]),x))
+joinOrdersDataRDD = orderItemsRDD.join(ordersIDRDD)
+
+parseJointDataRDD = joinOrdersDataRDD.map(lambda x:(x[0],x[1][0],x[1][1].split(",")[3]))
+
+parseJointDataRDD.filter()
+
+
+
