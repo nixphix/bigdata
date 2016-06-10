@@ -69,9 +69,11 @@ orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/").map(lamb
 ordersIDRDD = ordersRDD.map(lambda x:(int(x.split(",")[0]),x))
 joinOrdersDataRDD = orderItemsRDD.join(ordersIDRDD)
 
-parseJointDataRDD = joinOrdersDataRDD.map(lambda x:(x[0],x[1][0],x[1][1].split(",")[3]))
+parseJointDataRDD = joinOrdersDataRDD.map(lambda x:((x[0],x[1][1].split(",")[3]),x[1][0])).reduceByKey(lambda acc,val:acc+val)
 
-parseJointDataRDD.filter()
+# agg of PAYMENT_REVIEW and PENDING_PAYMENT
+parseJointDataRDD.filter(lambda x: "PAYMENT" in x[0][1]).map(lambda x:(x[0][1],x[1])).aggregateByKey((0.0,0),lambda acc,val: (acc[0]+val,acc[1]+1),lambda x,y:(x[0]+y[0],x[1]+y[1])).map(lambda x:(x[0],x[1][0],x[1][1],x[1][0]/x[1][1])).collect()
 
-
-
+# canceled orders above 500
+parseJointDataRDD.filter(lambda x:(x[0][1]=="CANCELED" and x[1]>500)).count()
+for i in parseJointDataRDD.filter(lambda x:(x[0][1]=="CANCELED" and x[1]>500)).sortBy(lambda x:x[0][0]).collect(): print i
