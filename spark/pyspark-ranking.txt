@@ -52,4 +52,28 @@ for i in sorted(prodByCatIDRDD.flatMap(lambda l:l[1]).map(lambda x:x.split(",")[
 for i in prodByCatIDRDD.flatMap(lambda l:l[1]).filter(lambda x:x.split(",")[4]=="").collect(): print i
 #685,31,TaylorMade SLDR Irons - (Steel) 4-PW, AW,,899.99,http://images.acmesports.sports/TaylorMade+SLDR+Irons+-+%28Steel%29+4-PW%2C+AW
 
+# edit the data file in hue data browser and reload textfile
+productsRDD = sc.textFile("sqoop_import/products/")
+prodByCatIDRDD = productsRDD.map(lambda x:(int(x.split(",")[1]),x)).groupByKey()
+
+for i in prodByCatIDRDD.flatMap(lambda l:l[1]).filter(lambda x:x.split(",")[4]=="").collect(): print i
+# no records :)
+
+# take top 2 products 
+for i in prodByCatIDRDD.flatMap(lambda x:sorted(x[1],key=lambda l:-float(l.split(",")[4]))[:2]).take(100): print i
+
+# samaple data
+#1054,47,Spalding NBA 54" Glass Portable Basketball Ho,,699.99,http://images.acmesports.sports/Spalding+NBA+54%22+Glass+Portable+Basketball+Hoop
+#1084,49,Lifetime Freestyle XL Stand-Up Paddle Board,,399.99,http://images.acmesports.sports/Lifetime+Freestyle+XL+Stand-Up+Paddle+Board
+#1104,49,GoPro HERO3+ Black Edition Camera,,399.99,http://images.acmesports.sports/GoPro+HERO3%2B+Black+Edition+Camera
+
+# take all the products with top 2 prices in each category
+# key as category id and price 
+prodByCatPriceRDD = productsRDD.map(lambda x:((int(x.split(",")[1]),float(x.split(",")[4])),x)).sortBy(lambda x: (x[0][0],-x[0][1]))
+for i in prodByCatPriceRDD.take(10): print i
+
+# take the key and 
+prodCatPriceKeyRDD = prodByCatPriceRDD.keys().distinct().sortBy(lambda x: (x[0],-x[1])).groupByKey().map(lambda x:(x[0],list(x[1])[:2])).flatMapValues(lambda x:x)
+for i in prodCatPriceKeyRDD.take(10): print i
+
 
