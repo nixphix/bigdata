@@ -39,6 +39,7 @@ for i in prodByCatIDRDD.flatMap(lambda x:sorted(x[1],key=lambda l:-float(l.split
 #5,2,Riddell Youth Revolution Speed Custom Footbal,,199.99,http://images.acmesports.sports/Riddell+Youth+Revolution+Speed+Custom+Football+Helmet
 #14,2,Quik Shade Summit SX170 10 FT. x 10 FT. Canop,,199.99,http://images.acmesports.sports/Quik+Shade+Summit+SX170+10+FT.+x+10+FT.+Canopy
 #12,2,Under Armour Men's Highlight MC Alter Ego Fla,,139.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Alter+Ego+Flash+Football...
+
 #rank function
 #get top two products by price in each category
 for i in prodByCatIDRDD.flatMap(lambda x:sorted(x[1],key=lambda l:-float(l.split(",")[4]))[:2]).take(10): print i
@@ -47,6 +48,8 @@ for i in prodByCatIDRDD.flatMap(lambda x:sorted(x[1],key=lambda l:-float(l.split
 for i in prodByCatIDRDD.flatMap(lambda x:sorted(x[1],key=lambda l:-float(l.split(",")[4]))[:2]).take(100): print i
 for i in sorted(prodByCatIDRDD.flatMap(lambda l:l[1]).map(lambda x:x.split(",")[4]).distinct().collect()): print i
 
+# because the following record has a comma in product name
 for i in prodByCatIDRDD.flatMap(lambda l:l[1]).filter(lambda x:x.split(",")[4]=="").collect(): print i
+#685,31,TaylorMade SLDR Irons - (Steel) 4-PW, AW,,899.99,http://images.acmesports.sports/TaylorMade+SLDR+Irons+-+%28Steel%29+4-PW%2C+AW
 
 
