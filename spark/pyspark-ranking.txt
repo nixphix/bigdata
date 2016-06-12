@@ -72,8 +72,18 @@ for i in prodByCatIDRDD.flatMap(lambda x:sorted(x[1],key=lambda l:-float(l.split
 prodByCatPriceRDD = productsRDD.map(lambda x:((int(x.split(",")[1]),float(x.split(",")[4])),x)).sortBy(lambda x: (x[0][0],-x[0][1]))
 for i in prodByCatPriceRDD.take(10): print i
 
-# take the key and 
-prodCatPriceKeyRDD = prodByCatPriceRDD.keys().distinct().sortBy(lambda x: (x[0],-x[1])).groupByKey().map(lambda x:(x[0],list(x[1])[:2])).flatMapValues(lambda x:x)
+# take unique key, sort by price, group by key and the take top 2
+# define n
+topN = 2
+prodCatPriceKeyRDD = prodByCatPriceRDD.keys().distinct().sortBy(lambda x: (x[0],-x[1])).groupByKey().map(lambda x:(x[0],list(x[1])[:topN])).flatMapValues(lambda x:x)
 for i in prodCatPriceKeyRDD.take(10): print i
 
+# create a broadcast variable with the (category id, price) tuples
+catIdPriceBC = sc.broadcast(prodCatPriceKeyRDD.collect())
+
+# now filter out top 2 procucts from prodByCatPriceRDD with broadcast value
+top2ProductsByPriceRDD = prodByCatPriceRDD.filter(lambda x : x[0] in catIdPriceBC.value)
+top2ProductsByPriceRDD.count()
+for i in top2ProductsByPriceRDD.take(50): print i
+catIdPriceBC.unpersist()
 
