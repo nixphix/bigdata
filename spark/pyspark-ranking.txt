@@ -87,3 +87,21 @@ top2ProductsByPriceRDD.count()
 for i in top2ProductsByPriceRDD.take(50): print i
 catIdPriceBC.unpersist()
 
+#--------------hive----------------#
+desc products;
+#product_id              int
+#product_category_id     int
+#product_name            string
+#product_description     string
+#product_price           double
+#product_image           string
+
+select * from products limit 10;
+select * from products sort by product_category_id asc, product_price desc limit 10;
+
+# rank product category by price
+select prod.product_id, prod.product_category_id, prod.product_name, prod.product_price, dense_rank() over (partition by product_category_id order by product_price desc) r from products prod distribute by product_category_id sort by product_category_id asc, product_price desc limit 10;
+
+# take top 2 priced products from each category
+select src.* from (select prod.product_id, prod.product_category_id, prod.product_name, prod.product_price, dense_rank() over (partition by product_category_id order by product_price desc) r from products prod distribute by product_category_id sort by product_category_id asc, product_price desc limit 1000) src where src.r<3;
+
