@@ -1,0 +1,79 @@
+pyspark -master local
+
+ordersRDD = sc.textFile("/user/cloudera/sqoop_import/orders/")
+print "\n".join(ordersRDD.map(lambda x:x.split(",")[3]).distinct().sortBy(lambda x:x).collect())
+
+# output
+CANCELED
+CLOSED
+COMPLETE
+ON_HOLD
+PAYMENT_REVIEW
+PENDING
+PENDING_PAYMENT
+PROCESSING
+SUSPECTED_FRAUD
+
+for i in ordersRDD.map(lambda x:(x.split(",")[3],1)).reduceByKey(lambda x,y:x+y).sortByKey().collect(): print i
+
+# output
+(u'CANCELED', 1428)
+(u'CLOSED', 7556)
+(u'COMPLETE', 22899)
+(u'ON_HOLD', 3798)
+(u'PAYMENT_REVIEW', 729)
+(u'PENDING', 7610)
+(u'PENDING_PAYMENT', 15030)
+(u'PROCESSING', 8275)
+(u'SUSPECTED_FRAUD', 1558)
+
+# filter canceled orders and take count
+ordersRDD.filter(lambda x:x.split(",")[3]=='CANCELED').count()
+# output 1428
+
+# filter PENDING orders and take count
+ordersRDD.filter(lambda x:x.split(",")[3]=='PENDING').count()
+# output 7610
+
+# filter all pending orders (PENDING and PENDING_PAYMENT) and take count
+ordersRDD.filter(lambda x:'PENDING' in x.split(",")[3]).count()
+# output 22640
+
+# filter all orders in payment stage (PAYMENT_REVIEW and PENDING_PAYMENT) and take count
+ordersRDD.filter(lambda x:'PAYMENT' in x.split(",")[3]).count()
+# output 15759
+
+# filter by date & time
+# import necessary package to convert string to date data type, data date format: 2013-07-25 00:00:00.0 -> "%Y-%m-%d %H:%M:%S"
+# Ref: https://docs.python.org/2/library/datetime.html#strftime-strptime-behavior
+
+from datetime import datetime
+ordersByDateRDD = ordersRDD.map(lambda x:(datetime.strptime(x.split(",")[1],"%Y-%m-%d %H:%M:%S.%f"),x))
+
+ordersByDateRDD.max(lambda x:x[0])
+# output
+(datetime.datetime(2014, 7, 24, 0, 0), u'57595,2014-07-24 00:00:00.0,9102,COMPLETE')
+
+ordersByDateRDD.min(lambda x:x[0])
+# output
+(datetime.datetime(2013, 7, 25, 0, 0), u'1,2013-07-25 00:00:00.0,11599,CLOSED')
+
+# filter dataset by date
+ordersByDateRDD.filter(lambda x:x[0]>datetime.strptime("01012016","%d%m%Y")).count()
+ordersByDateRDD.filter(lambda x:x[0]>datetime.strptime("01012013","%d%m%Y")).count()
+
+ordersByDateRDD.filter(lambda x:x[0] == datetime(2014,01,01,0,0)).count()
+
+# filter by billed amount
+orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/").map(lambda x:(int(x.split(",")[1]),float(x.split(",")[4])))
+ordersIDRDD = ordersRDD.map(lambda x:(int(x.split(",")[0]),x))
+joinOrdersDataRDD = orderItemsRDD.join(ordersIDRDD)
+
+parseJointDataRDD = joinOrdersDataRDD.map(lambda x:((x[0],x[1][1].split(",")[3]),x[1][0])).reduceByKey(lambda acc,val:acc+val)
+
+# agg of PAYMENT_REVIEW and PENDING_PAYMENT
+parseJointDataRDD.filter(lambda x: "PAYMENT" in x[0][1]).map(lambda x:(x[0][1],x[1])).aggregateByKey((0.0,0),lambda acc,val: (acc[0]+val,acc[1]+1),lambda x,y:(x[0]+y[0],x[1]+y[1])).map(lambda x:(x[0],x[1][0],x[1][1],x[1][0]/x[1][1])).collect()
+
+# canceled orders above 500
+parseJointDataRDD.filter(lambda x:(x[0][1]=="CANCELED" and x[1]>500)).count()
+for i in parseJointDataRDD.filter(lambda x:(x[0][1]=="CANCELED" and x[1]>500)).sortBy(lambda x:x[0][0]).collect(): print i

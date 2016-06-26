@@ -22,3 +22,103 @@ minCnt = min(sepCnt.collect()[0])
 deviantDataRDD = sepCnt.zipWithIndex().filter(lambda x:x[0][0]>minCnt)
 for i in deviantDataRDD.collect(): print i
 #((6, u'685,31,TaylorMade SLDR Irons - (Steel) 4-PW, AW,,899.99,http://images.acmesports.sports/TaylorMade+SLDR+Irons+-+%28Steel%29+4-PW%2C+AW'),684)
+
+goodDataRDD = sepCnt.zipWithIndex().filter(lambda x:x[0][0]==minCnt).map(lambda x: x[0][1].split(","))
+sepCnt.count() - goodDataRDD.count()
+goodDataRDD.take(1)
+goodDataRDD.map(lambda x:(float(x[4]),x[2])).reduce(lambda x,y: x if(y[0]<x[0]) else y)
+# (1999.99, u'SOLE E35 Elliptical')
+goodDataRDD.map(lambda x:(float(x[4]),x[2])).reduce(lambda x,y: x if(y[0]>x[0]) else y)
+# (0.0, u"Nike Men's Hypervenom Phantom Premium FG Socc")
+
+#---------------------------------------#
+
+orderItemsRDD = sc.textFile("/user/cloudera/sqoop_import/order_items/")
+orderItemsRDD.take(1)
+# (order_item_id int), (order_item_order_id int), (order_item_product_id int), (order_item_quantity tinyint), 
+#(order_item_subtotal double), (order_item_product_price double)
+extractData = orderItemsRDD.map(lambda x: x.split(",")).map(lambda x:(int(x[1]),float(x[4])))
+totalRevenu = extractData.map(lambda x:x[1]).reduce(lambda x,y:x+y)
+#34322619.930029646
+totalOrders = extractData.map(lambda x:x[0]).distinct().count()
+#57431
+totalRevenu/totalOrders
+#597.632287963463
+
+#---------------------------------------#
+
+ordersRDD = sc.textFile("/user/cloudera/sqoop_import/orders/").map(lambda x:x.split(","))
+ordersRDD.take(1)
+
+ordCntBK = ordersRDD.map(lambda x: (x[3],1)).countByKey()
+for i in ordCntBK.items(): print i
+
+#(u'COMPLETE', 22899)
+#(u'PAYMENT_REVIEW', 729)
+#(u'PROCESSING', 8275)
+#(u'CANCELED', 1428)
+#(u'PENDING', 7610)
+#(u'CLOSED', 7556)
+#(u'PENDING_PAYMENT', 15030)
+#(u'SUSPECTED_FRAUD', 1558)
+#(u'ON_HOLD', 3798)
+
+ordGrpBK = ordersRDD.map(lambda x: (x[3],1)).groupByKey()
+ordGrpBK.take(1)
+for i in ordGrpBK.map(lambda x: (x[0],sum(x[1]))).collect(): print i
+
+#(u'PENDING', 7610)
+#(u'SUSPECTED_FRAUD', 1558)
+#(u'CLOSED', 7556)
+#(u'ON_HOLD', 3798)
+#(u'CANCELED', 1428)
+#(u'PROCESSING', 8275)
+#(u'PENDING_PAYMENT', 15030)
+#(u'COMPLETE', 22899)
+#(u'PAYMENT_REVIEW', 729)
+
+ordRedBK = ordersRDD.map(lambda x: (x[3],1)).reduceByKey(lambda acc, val: acc+val)
+for i in ordRedBK.collect(): print i
+
+#(u'PENDING', 7610)
+#(u'SUSPECTED_FRAUD', 1558)
+#(u'CLOSED', 7556)
+#(u'ON_HOLD', 3798)
+#(u'CANCELED', 1428)
+#(u'PROCESSING', 8275)
+#(u'PENDING_PAYMENT', 15030)
+#(u'COMPLETE', 22899)
+#(u'PAYMENT_REVIEW', 729)
+
+seqFun = (lambda acc,val:acc+1)         # (lambda acc,val:acc+val)
+combFun = (lambda acc,val:acc+val)
+ordAggBK = ordersRDD.map(lambda x: (x[3],1)).aggregateByKey(0,seqFun,combFun)
+for i in ordAggBK.collect(): print i
+
+#(u'PENDING', 7610)
+#(u'SUSPECTED_FRAUD', 1558)
+#(u'CLOSED', 7556)
+#(u'ON_HOLD', 3798)
+#(u'CANCELED', 1428)
+#(u'PROCESSING', 8275)
+#(u'PENDING_PAYMENT', 15030)
+#(u'COMPLETE', 22899)
+#(u'PAYMENT_REVIEW', 729)
+
+initFun = (lambda x:1)
+mrgValFun = (lambda acc,val:acc+val)
+mrgCombFun = (lambda acc,val:acc+val)
+ordCombBK = ordersRDD.map(lambda x: (x[3],1)).combineByKey(initFun,mrgValFun,mrgCombFun)
+for i in ordCombBK.collect(): print i
+
+#(u'PENDING', 7610)
+#(u'SUSPECTED_FRAUD', 1558)
+#(u'CLOSED', 7556)
+#(u'ON_HOLD', 3798)
+#(u'CANCELED', 1428)
+#(u'PROCESSING', 8275)
+#(u'PENDING_PAYMENT', 15030)
+#(u'COMPLETE', 22899)
+#(u'PAYMENT_REVIEW', 729)
+
+
