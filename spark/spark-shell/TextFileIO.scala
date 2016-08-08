@@ -1,11 +1,11 @@
 import org.apache.spark.{SparkContext,SparkConf}
-import java.time.ZoneDateTime
-import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.text.SimpleDateFormat
 
 object TextFileIO extends App{
   val conf = new SparkConf().setAppName("spark-submit textfileIO")
   val sc   = new SparkContext(conf)
-  def getTimeStamp: String = DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(ZonedDateTime.now())
+  lazy val getTimeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())
   
   val textRDD = sc.textFile("/user/cloudera/sqoop_import/departments_txt")
   println(textRDD.count())
