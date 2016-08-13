@@ -102,6 +102,16 @@ sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 --create-hive-table \
 --as-textfile
 
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table order_items \
+--hive-table order_items \
+--warehouse-dir /user/hive/warehouse/ \
+--hive-import \
+--create-hive-table \
+--as-textfile
+
 #look at hive delimiters
 sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 --username retail_dba \
