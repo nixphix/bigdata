@@ -99,6 +99,18 @@
   * [2013-07-29 00:00:00.0,216,137287.09000000026]
   */
  
+/*** sql context ***/
+ val ordersSplitRDD = sc.textFile("sqoop_import/orders").map(r => r.split(","))
+ val orderItemsSplitRDD = sc.textFile("sqoop_import/order_items").map(r => r.split(","))
+ 
+ import org.apache.spark.sql.{SQLContext,Row}
+ val sqlc = new SQLContext(sc)
+ sqlc.sql("set spark.sql.shuffle.partitions=10")
+ 
+ import sqlc.CreateSchemaRDD
+ 
+ 
+ 
  
  
  
