@@ -36,6 +36,29 @@
  * +--------------------------+------------+------+-----+---------+----------------+
  * 
  * join orders and order_items, get order count and revenue per day
+ * orders and order_items dataset in hdfs
+ * hdfs dfs -ls sqoop_import
  */
  
+ val ordersRDD = sc.textFile("sqoop_import/orders")
+ val orderItemsRDD = sc.textFile("sqoop_import/order_items")
+ 
+ ordersRDD.take(5).foreach(println)
+ orderItemsRDD.take(5).foreach(println)
+ 
+ val ordersOIDRDD = ordersRDD.map(r => (r.split(",")(0).toLong,r))
+ val orderItemsOIDRDD = orderItemsRDD.map(r => (r.split(",")(1).toLong,r))
+ 
+ ordersOIDRDD.take(5).foreach(println)
+ orderItemsOIDRDD.take(5).foreach(println)
+ 
+ val order_orderItmRDD = orderItemsOIDRDD.join(ordersOIDRDD)
+ order_orderItmRDD.take(5).foreach(println)
+ 
+ val date_odrID_subttlRDD = order_orderItmRDD.map(r => (r._2._2.split(",")(1)+"|"+r._1.toString,r._2._1.split(",")(4).toFloat)).reduceByKey((x,y) => x+y)
+ date_odrID_subttlRDD.take(5).foreach(println)
+ 
+ val date_odrCnt_RevenueRDD = date_odrID_subttlRDD.map(r => (r._1.split('|')(0),(1,r._2))).reduceByKey((x,y) => (x._1+y._1,x._2+y._2))
+ date_odrCnt_RevenueRDD.take(5).foreach(println)
+ date_odrCnt_RevenueRDD.sortByKey().collect.foreach(println)
  
