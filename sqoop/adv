@@ -91,6 +91,17 @@ select * from departments_null;
 
 #############################################################################
 
+# hive import
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username retail_dba \
+--password cloudera \
+--table orders \
+--hive-table orders \
+--warehouse-dir /user/hive/warehouse/ \
+--hive-import \
+--create-hive-table \
+--as-textfile
+
 #look at hive delimiters
 sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
 --username retail_dba \
