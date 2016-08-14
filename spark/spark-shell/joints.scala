@@ -100,12 +100,15 @@
   */
  
 /*** sql context ***/
- val ordersSplitRDD = sc.textFile("sqoop_import/orders").map(r => r.split(","))
- val orderItemsSplitRDD = sc.textFile("sqoop_import/order_items").map(r => r.split(","))
+ val ordersRDD = sc.textFile("sqoop_import/orders")
+ val orderItemsRDD = sc.textFile("sqoop_import/order_items")
  
  import org.apache.spark.sql.{SQLContext,Row}
  val sqlc = new SQLContext(sc)
  sqlc.sql("set spark.sql.shuffle.partitions=10")
+ 
+ case class Order(order_id: Int, order_date: String, order_customer_id: Int, order_status: String)
+ val orderSchemaRDD = ordersRDD.map(r => r.split(",").map(r => Order(_1.toInt,_2,_3.toInt,_4))
  
  import sqlc.CreateSchemaRDD
  
