@@ -33,3 +33,20 @@ hdfs dfs -cat /user/hive/warehouse/person/*
 # hive clean up 
 hive
 drop table person;
+
+###
+
+# impala
+impala-shell
+show tables;
+create table person_impala (id int, name string);
+insert into person_impala values (2,'homo sapiens');
+select * from person_impala;
+insert into person_impala values (3,'robo sapiens');
+select * from person_impala;
+
+# hive cli
+hive
+show tables;
+select * from person_impala;
+
