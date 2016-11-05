@@ -1,0 +1,4 @@
+# exploring hive configuration
+cd /etc/hive/conf
+ls -ltr
+cat hive-site.xml
