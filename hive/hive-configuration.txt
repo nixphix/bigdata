@@ -2,3 +2,34 @@
 cd /etc/hive/conf
 ls -ltr
 cat hive-site.xml
+
+
+# hive metastore in mysql
+mysql -u hive -p cloudera
+show databases;
+use metastore;
+show tables;
+desc TBLS;
+select tbl_id, create_time, tbl_name from TBLS;
+select tbl_id, create_time, tbl_name from TBLS order by create_time desc limit 1;
+select * from TABLE_PARAMS where tbl_id=(select tbl_id from TBLS order by create_time desc limit 1);
+
+
+# hive cli
+hive
+show tables;
+create table person (id int, name string);
+select * from person;
+insert into person values (1,'karan');
+select * from person;
+
+
+# hdfs file
+hdfs dfs -ls /user/hive/warehouse
+hdfs dfs -ls /user/hive/warehouse/person
+hdfs dfs -cat /user/hive/warehouse/person/*
+
+
+# hive clean up 
+hive
+drop table person;
