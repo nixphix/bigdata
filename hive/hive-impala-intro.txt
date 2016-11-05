@@ -45,6 +45,7 @@ select * from person_impala;
 insert into person_impala values (3,'robo sapiens');
 select * from person_impala;
 
+
 # hive cli
 hive
 show tables;
