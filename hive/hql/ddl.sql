@@ -1,1 +1,1 @@
-
+--hive --version
