@@ -91,7 +91,7 @@
  order by o.order_date""") 
  
  orderCntTotalRDD.take(5).foreach(println)
- /**output
+ /**sample output
   * [2013-07-25 00:00:00.0,116,68153.82999999999]
   * [2013-07-26 00:00:00.0,233,136520.17000000025]
   * [2013-07-27 00:00:00.0,175,101074.34000000008]
@@ -99,18 +99,47 @@
   * [2013-07-29 00:00:00.0,216,137287.09000000026]
   */
  
-/*** sql context ***/
- val ordersSplitRDD = sc.textFile("sqoop_import/orders").map(r => r.split(","))
- val orderItemsSplitRDD = sc.textFile("sqoop_import/order_items").map(r => r.split(","))
- 
- import org.apache.spark.sql.{SQLContext,Row}
+ // spark version 1.3
+ import org.apache.spark.sql.SQLContext
  val sqlc = new SQLContext(sc)
  sqlc.sql("set spark.sql.shuffle.partitions=10")
  
- import sqlc.CreateSchemaRDD
+ case class Order(order_id: Int, order_date: String, order_customer_id: Int, order_status: String)
  
+ import sqlc.implicits._
+ val orderSchemaRDD = sc.textFile("sqoop_import/orders").map(_.split(",")).
+                      map(r => Order(r(0).trim.toInt,r(1),r(2).trim.toInt,r(3))).toDF()
+ orderSchemaRDD.registerTempTable("orders")
+ val orderSampleRDD = sqlc.sql("select * from orders limit 5")
+ orderSampleRDD.show()
+ /**in spark version 1.2
+ * import sqlc.createSchemaRDD
+ * orderSchemaRDD.registerTempTable("orders")
+ */
  
+ case class OrderItem(order_item_id: Int, order_item_order_id: Int, order_item_product_id: Int, order_item_quantity: Byte,
+            order_item_subtotal: Float, order_item_product_price: Float)
+ val orderItemSchemaRDD = sc.textFile("sqoop_import/order_items").map(_.split(",")).
+                          map(r => OrderItem(r(0).trim.toInt,r(1).trim.toInt,r(2).trim.toInt,r(3).trim.toByte,
+                          r(4).trim.toFloat,r(5).trim.toFloat)).toDF()
+ orderItemSchemaRDD.registerTempTable("order_items")
+ val orderItemSampleRDD = sqlc.sql("select * from order_items limit 5")
+ orderItemSampleRDD.show()
  
+ val dailyOrderSummary =  sqlc.sql("""select o.order_date, 
+ cast(count(distinct o.order_id) as int) as order_cnt, 
+ cast(sum(oi.order_item_subtotal) as double) as order_amount 
+ from orders o, order_items oi 
+ where o.order_id=oi.order_item_order_id 
+ group by o.order_date 
+ order by o.order_date""")
  
+ dailyOrderSummary.head(5).foreach(println)
  
- 
+ /**sample output
+  * [2013-07-25 00:00:00.0,116,68153.83132743835]
+  * [2013-07-26 00:00:00.0,233,136520.17266082764
+  * [2013-07-27 00:00:00.0,175,101074.34193611145]
+  * [2013-07-28 00:00:00.0,158,87123.08192253113]
+  * [2013-07-29 00:00:00.0,216,137287.09244918823]
+  */
