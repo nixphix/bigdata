@@ -57,13 +57,18 @@ ls -ltr
 cat sqoop_import_QueryResult.avsc
 
 #---------------------------------------------------------#
+# import departments table as parquetfile
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--as-parquetfile \
+--target-dir /user/cloudera/staging/sq_import/retail_db/departments_parq \
+--num-mappers 1
 
-
-
-
-
-
-
-
+# check data in hdfs, note the additional files created for parquetfile format
+hdfs dfs -ls -R /user/cloudera/staging/sq_import/retail_db/departments_parq
+hdfs dfs -cat /user/cloudera/staging/sq_import/retail_db/departments_parq/*.parquet
 
 
