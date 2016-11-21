@@ -28,13 +28,15 @@ sqoop import \
 hdfs dfs -ls -R /user/cloudera/staging/sq_import/retail_db/orders_partition/
 hdfs dfs -cat /user/cloudera/staging/sq_import/retail_db/orders_partition/part*
 
-# third load
+# third load, limiting data by boundary query (just a hack not a proper solution)
 sqoop import \
 --connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
 --username retail_dba \
 --password cloudera \
 --as-textfile \
 --table orders \
+--boundary-query "select min(order_date),max(order_date) from orders where extract(year from order_date)=2013 and extract(month from order_date)=09" \
+--split-by order_date \
 --target-dir /user/cloudera/staging/sq_import/retail_db/orders_partition \
 --append \
 --num-mappers 1
@@ -45,14 +47,3 @@ hdfs dfs -cat   /user/cloudera/staging/sq_import/retail_db/orders_partition/part
 # cleanup
 #hdfs dfs -rm -R /user/cloudera/staging/sq_import/retail_db/orders_partition
 #hdfs dfs -rm /user/cloudera/staging/sq_import/retail_db/orders_partition/part*2
-
-
-
-
-
-
-
-
-
-
-
