@@ -1,4 +1,4 @@
-#---------------------------------------------------------#
+#----------- without using incremental import parameters -----------#
 # incremental load with orders table as text file
 # first load
 sqoop import \
@@ -47,5 +47,5 @@ hdfs dfs -ls -R /user/cloudera/staging/sq_import/retail_db/orders_partition/
 hdfs dfs -cat   /user/cloudera/staging/sq_import/retail_db/orders_partition/part*2
 
 # cleanup
-#hdfs dfs -rm -R /user/cloudera/staging/sq_import/retail_db/orders_partition
-#hdfs dfs -rm /user/cloudera/staging/sq_import/retail_db/orders_partition/part*2
+# hdfs dfs -rm -R /user/cloudera/staging/sq_import/retail_db/orders_partition
+# hdfs dfs -rm /user/cloudera/staging/sq_import/retail_db/orders_partition/part*2
