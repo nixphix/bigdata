@@ -61,7 +61,7 @@ sqoop import \
 --check-column order_date \
 --incremental append \
 --last-value '2013-08-31 00:00:00.0' \
---warehouse-dir /user/cloudera/staging/sq_import/retail_db/orders_append \
+--warehouse-dir /user/cloudera/staging/sq_import/retail_db \
 --num-mappers 1
 
 # sqoop will prompt that there is no new records since last import
