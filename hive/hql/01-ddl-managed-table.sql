@@ -80,9 +80,9 @@ SELECT * FROM retail_db.store;
 LOAD DATA LOCAL INPATH '/home/cloudera/hive/data/store_upd.psv' OVERWRITE INTO TABLE retail_db.store;
 SELECT * FROM retail_db.store;
 
-------------------------------------------------------
--- creating a managed db/table in separate location --
-------------------------------------------------------
+------------------------------------------------
+-- creating a managed db in separate location --
+------------------------------------------------
 
 --create a table space outside hive warehouse dir
 dfs -mkdir -p /user/cloudera/hive/tbl_space
@@ -116,4 +116,36 @@ dfs -cat /user/cloudera/hive/tbl_space/managed_outside_hive/test/sequence.txt;
 --drop db and see if the data is also wiped out
 DROP DATABASE managed_outside_hive CASCADE;
 dfs -ls  /user/cloudera/hive/tbl_space
+
+---------------------------------------------------
+-- creating a managed table in separate location --
+---------------------------------------------------
+
+--switch to default database or any other 
+USE retail_db;
+
+--create a table
+CREATE TABLE retail_db.test (
+id INT
+)
+COMMENT 'a managed table created under retail db schema but resides outside hive warehouse'
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/user/cloudera/hive/tbl_space/retail_db/test';
+
+--please note that the Table Type is managed, it belongs to retail_db schema 
+--and the table data is not in /user/hive/warehouse/retail_db.db which the root for retail db tables
+DESCRIBE FORMATTED retail_db.test;
+dfs -ls -R /user/cloudera/hive/tbl_space/retail_db/;
+
+--load data
+LOAD DATA LOCAL INPATH '/home/cloudera/hive/data/sequence.txt' INTO TABLE retail_db.test;
+SELECT * FROM retail_db.test;
+dfs -ls -R /user/cloudera/hive/tbl_space/retail_db;
+dfs -ls -R /user/hive/warehouse/retail_db.db;
+
+--cleanup
+DROP TABLE retail_db.test;
+dfs -ls -R /user/cloudera/hive/tbl_space;
 
