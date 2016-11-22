@@ -81,3 +81,27 @@ hdfs dfs -tail /user/cloudera/staging/sq_import/retail_db/orders_append/part-m-0
 
 
 #-----------          lastmodified mode          -----------#
+
+# data preparation in mysql
+# create table orders_lstmod as select * from orders where order_date < '2013-07-26 00:00:00';
+# select count(1) from orders_lstmod ; -- use this count with wc output in hdfs
+# now import the orders_append table via sqoop
+
+#--- first import 
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3308/ \
+--username retail_db \
+--password cloudera \
+--table orders_lstmod \
+--warehouse-dir /user/cloudera/staging/sq_import/retail_db \
+-num-mappers 1
+
+
+
+
+
+
+
+
+
+
