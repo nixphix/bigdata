@@ -35,7 +35,9 @@ sqoop import \
 --password cloudera \
 --as-textfile \
 --table orders \
---boundary-query "select min(order_date),max(order_date) from orders where extract(year from order_date)=2013 and extract(month from order_date)=09" \
+--boundary-query "select min(order_date),max(order_date) \
+  from orders where extract(year from order_date)=2013 \
+  and extract(month from order_date)=09" \
 --split-by order_date \
 --target-dir /user/cloudera/staging/sq_import/retail_db/orders_partition \
 --append \
