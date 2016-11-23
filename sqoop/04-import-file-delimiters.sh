@@ -95,3 +95,17 @@ sqoop import \
 # check in hdfs 
 hdfs dfs -cat   /user/cloudera/staging/sq_import/retail_db/delimiters_test/part-m-00000
 
+
+# using --mysql-delimiters parameter
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba \
+--password cloudera \
+--table delimiters_test \
+--mysql-delimiters \
+--warehouse-dir /user/cloudera/staging/sq_import/retail_db \
+--delete-target-dir \
+--num-mappers 1
+
+# check in hdfs 
+hdfs dfs -cat   /user/cloudera/staging/sq_import/retail_db/delimiters_test/part-m-00000
