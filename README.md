@@ -1,3 +1,3 @@
 # Big Data
 ---
-Repository of code snippents for learning big data
+Repository of code snippets for learning big data
