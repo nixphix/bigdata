@@ -71,4 +71,19 @@ sqoop import \
 hdfs dfs -ls -R /user/cloudera/staging/sq_import/retail_db/departments_parq
 hdfs dfs -cat /user/cloudera/staging/sq_import/retail_db/departments_parq/*.parquet
 
+#---------------------------------------------------------#
+# import departments table and store it as compressed file
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--as-textfile \
+--compress \
+--target-dir /user/cloudera/staging/sq_import/retail_db/departments_zip \
+--num-mappers 1
+
+# check data in hdfs
+hdfs dfs -ls -R /user/cloudera/staging/sq_import/retail_db/departments_zip
+hdfs dfs -cat /user/cloudera/staging/sq_import/retail_db/departments_zip/part-m-00000.gz
 
