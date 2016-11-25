@@ -34,7 +34,7 @@ SELECT * FROM hive_import WHERE text IS NULL;
 hdfs dfs -ls -R hdfs://quickstart.cloudera:8020/user/hive/warehouse/retail_db.db/hive_import 
 
 
-#---second import
+#--- second import
 # with \N as null value placeholder
 sqoop import \
 --connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
@@ -56,7 +56,7 @@ SELECT * FROM hive_import WHERE text IS NULL;
 hdfs dfs -ls -R hdfs://quickstart.cloudera:8020/user/hive/warehouse/retail_db.db/hive_import 
 
 
-#---third import
+#--- third import
 # , and \n as field and row delimiter respectively
 # with \N as null value placeholder
 hive -e "drop table retail_db.hive_import;"
@@ -74,7 +74,6 @@ sqoop import \
 --hive-table retail_db.hive_import \
 --num-mappers 1
 
-
 # describe table in hive, note that it is created with , and \n as field and row delimiters
 USE retail_db;
 DESCRIBE FORMATTED hive_import;
@@ -87,3 +86,47 @@ hdfs dfs -ls -R hdfs://quickstart.cloudera:8020/user/hive/warehouse/retail_db.db
 # sqoop can not handle this kind of issue unless hive default separators are used
 SELECT * FROM hive_import;
 
+
+#--- fourth import
+# data preparation in mysql
+# insert into hive_import value(5,'Hello\nWorld!',10);
+# insert into hive_import value(6,'Hello\rWorld!',10);
+# insert into hive_import value(7,'Hello\001\nWorld!',10);
+# above data includes hive's default delimiters in the text field
+
+# drop hive table since we will be testing hive's default delimites in this
+hive -e "drop table retail_db.hive_import;"
+
+# first run this script with out --hive-drop-import-delims parameter
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba \
+--password cloudera \
+--table hive_import \
+--null-string '\\N' \
+--null-non-string '\\N' \
+--hive-import \
+--create-hive-table \
+--hive-table retail_db.hive_import \
+--num-mappers 1
+
+# check hive table 
+SELECT * FROM retail_db.hive_import limit 10;
+
+
+# import with drop delimiters option
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba \
+--password cloudera \
+--table hive_import \
+--null-string '\\N' \
+--null-non-string '\\N' \
+--hive-import \
+--create-hive-table \
+--hive-drop-import-delims \
+--hive-table retail_db.hive_import_drop \
+--num-mappers 1
+
+# check hive table 
+SELECT * FROM retail_db.hive_import_drop limit 10;
