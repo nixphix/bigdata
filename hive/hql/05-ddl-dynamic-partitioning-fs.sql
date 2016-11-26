@@ -11,7 +11,7 @@ dfs -mkdir -p /user/cloudera/staging/ephemeral/hive/orders-2014-01;
 
 -- get the data from already partitioned data or from sqoop
 dfs -ls /user/hive/warehouse/retail_db.db/orders_part_2;
-dfs -cp /user/hive/warehouse/retail_db.db/orders_part_2/order_month=1/*2014/00*	 staging/ephemeral/hive/orders-2014-01;
+dfs -cp /user/hive/warehouse/retail_db.db/orders_part_2/order_month=1/o*2014/00* staging/ephemeral/hive/orders-2014-01;
 dfs -ls -R staging/ephemeral/hive/orders-2014-01;
 
 -- create table with partition column
