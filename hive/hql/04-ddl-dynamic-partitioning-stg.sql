@@ -70,16 +70,13 @@ FIELDS TERMINATED BY ','
 STORED AS TEXTFILE;
 
 -- load data from existing table in staging.orders
-INSERT INTO retail_db.orders_part_3 PARTITION (order_month,order_year)
+INSERT INTO retail_db.orders_part_3 PARTITION (order_year,order_month)
 SELECT order_id, to_date(order_date) order_date, order_customer_id,
 order_status, month(order_date) order_month, year(order_date) order_year FROM default.orders;
 
 -- check data in hdfs 
--- notice that the folder is arranged as order_year/order_month but still there are 12 year folder !!! 
--- the orders in which you load also matters, in the insert statement month is feed first and then year second
--- so be mindfull of the order in which the partition columns are declared and loaded
+-- notice that the folder is arranged as order_year/order_month 
 dfs -ls hdfs://quickstart.cloudera:8020/user/hive/warehouse/retail_db.db/orders_part_3;
 
 -- check the data
--- this query will not return any value
 SELECT * FROM retail_db.orders_part_3 where order_month=09 limit 10;
