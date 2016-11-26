@@ -75,8 +75,22 @@ SELECT order_id, to_date(order_date) order_date, order_customer_id,
 order_status, month(order_date) order_month, year(order_date) order_year FROM default.orders;
 
 -- check data in hdfs 
--- notice that the folder is arranged as order_year/order_month 
+-- notice that the folder is arranged as order_year/order_month but still there are 12 year folder !!! 
+-- the orders in which you load also matters, in the insert statement month is feed first and then year second from the select query
+-- so be mindful of the order in which the partition columns are declared and loaded
 dfs -ls hdfs://quickstart.cloudera:8020/user/hive/warehouse/retail_db.db/orders_part_3;
+
+-- check the data
+-- this query will not return any value		
+SELECT * FROM retail_db.orders_part_3 where order_month=09 limit 10;
+
+--- clean the table and reload again
+dfs -rm -R /user/hive/warehouse/retail_db.db/orders_part_3/order*;
+
+-- this should load data correctly
+INSERT INTO retail_db.orders_part_3 PARTITION (order_year,order_month)
+SELECT order_id, to_date(order_date) order_date, order_customer_id,
+order_status, year(order_date) order_year, month(order_date) order_month FROM default.orders;
 
 -- check the data
 SELECT * FROM retail_db.orders_part_3 where order_month=09 limit 10;
