@@ -1,6 +1,6 @@
------------------------------------------------------
---  creating partitioned table in non strict mode  --
------------------------------------------------------
+------------------------------------------------------------------------------------
+--  creating partitioned table in non strict mode, data feed from staging table   --
+------------------------------------------------------------------------------------
 
 -- set hive config for dynamic partitioning
 set hive.exec.dynamic.partition=true;
@@ -30,9 +30,9 @@ SELECT * FROM retail_db.orders_part where order_month='2013-09' limit 10;
 dfs -ls -R hdfs://quickstart.cloudera:8020/user/hive/warehouse/retail_db.db/orders_part;
 
 
-----------------------------------------------------------------------
---  creating partitioned table with two columns in non strict mode  --
-----------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+--  creating partitioned table with two columns in non strict mode, data feed from staging table  --
+----------------------------------------------------------------------------------------------------
 
 -- create table with two partition column
 CREATE TABLE IF NOT EXISTS retail_db.orders_part_2 (
@@ -57,7 +57,7 @@ SELECT * FROM retail_db.orders_part_2 where order_month=09 limit 10;
 -- check data in hdfs, notice that the folder is arranged as order_month/order_year
 dfs -ls -R hdfs://quickstart.cloudera:8020/user/hive/warehouse/retail_db.db/orders_part_2;
 
-
+--- Now with correct order
 -- create table with two partition column
 CREATE TABLE IF NOT EXISTS retail_db.orders_part_3 (
 order_id int,
