@@ -5,6 +5,7 @@ mkdir -p ~/data/avro
 cd ~/data/avro
 ls -ltr
 
+#--- first import
 # import departments table as avro file
 sqoop import \
 --connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
@@ -24,6 +25,8 @@ ls -ltr
 cat departments.avsc
 view departments.avro
 
+
+#--- second import
 #--- preparing data in mysql
 mysql -u retail_dba -pcloudera retail_db
 create table dept_avro as select * from departments ;
@@ -51,7 +54,4 @@ hdfs dfs -get /user/cloudera/staging/avro/retail_db/dept/part-m-00000.avro ~/dat
 ls -ltr
 cat dept.avsc
 view dept.avro
-
-#--- following will list the avro tools
-avro-tools
 
