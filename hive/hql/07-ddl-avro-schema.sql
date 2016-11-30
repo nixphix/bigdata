@@ -61,4 +61,15 @@ DESCRIBE FORMATTED retail_db.orders_avro;
 
 --- load data into table
 LOAD DATA INPATH '/user/cloudera/staging/sq_import/retail_db/orders_avro/part-m-00000.avro' INTO TABLE retail_db.orders_avro;
+
+--- check data in the table, notice that date is coverted to unix timestamp bigint (milli second)
 SELECT * FROM retail_db.orders_avro limit 10;
+
+--- convert unix timestamp to date format
+SELECT order_id, FROM_UNIXTIME(cast(order_date/1000 as int)) date, order_customer_id, order_status 
+FROM retail_db.orders_avro limit 10;
+
+--- extract month and year from the unix timestamp
+SELECT month(FROM_UNIXTIME(cast(order_date/1000 as int))), 
+year(FROM_UNIXTIME(cast(order_date/1000 as int))) 
+FROM retail_db.orders_avro limit 10;
