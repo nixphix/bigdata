@@ -87,3 +87,21 @@ sqoop import \
 hdfs dfs -ls -R /user/cloudera/staging/sq_import/retail_db/departments_zip
 hdfs dfs -cat /user/cloudera/staging/sq_import/retail_db/departments_zip/part-m-00000.gz
 
+#---------------------------------------------------------#
+# import orders table as avro file
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba \
+--password cloudera \
+--table orders \
+--target-dir /user/cloudera/staging/sq_import/retail_db/orders_avro \
+--as-avrodatafile \
+--num-mappers 1
+
+# check data in hdfs
+hdfs dfs -ls -R /user/cloudera/staging/sq_import/retail_db/orders_avro
+hdfs dfs -cat /user/cloudera/staging/sq_import/retail_db/orders_avro/*
+
+# check local file for avsc file
+ls -ltr
+cat sqoop_import_orders.avsc
