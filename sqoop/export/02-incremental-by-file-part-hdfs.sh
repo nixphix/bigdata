@@ -1,3 +1,4 @@
+#----------- without incremental import parameters -----------#
 #--- make staging directory for sqoop exports
 hdfs dfs -mkdir -p /user/cloudera/staging/sq_export/retail_db/orders_append/order_date=2013-07
 hdfs dfs -mkdir -p /user/cloudera/staging/sq_export/retail_db/orders_append/order_date=2013-08
@@ -13,10 +14,10 @@ hdfs dfs -cp /user/cloudera/staging/sq_import/retail_db/orders_append/part-m-000
 hdfs dfs -ls -R /user/cloudera/staging/sq_export/retail_db/orders_append
 
 #--- create export table in mysql
-#--- like clause will include primary constraint and autoincreament while creating table
+#--- like clause will include primary constraint and autoincrement while creating table
 CREATE TABLE sq_export.orders_append LIKE retail_db.orders;
 
-#--- create staging table to stag data before inserting into target table
+#--- create staging table to stage data before inserting into target table
 #--- staging table should not have any constraints like primary key which is why ctas is used to capture only column metadata
 CREATE TABLE sq_export.orders_append_stg as select * from sq_export.orders_append limit 0;
 ALTER TABLE  sq_export.orders_append_stg MODIFY order_id int not null;
@@ -93,3 +94,5 @@ SELECT count(1) FROM sq_export.orders_append;
 
 #--- check the year-month of the current data
 SELECT DISTINCT  EXTRACT(YEAR FROM order_date) yr, EXTRACT(MONTH FROM order_date) mth FROM sq_export.orders_append;
+
+
