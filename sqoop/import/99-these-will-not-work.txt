@@ -1,6 +1,7 @@
 #----------- following sqoop imports will not work, reason in comment -----------#
 # i have documented my fails here :P 
 # learn from my mistakes 
+# Success is not final, failure is not fatal: it is the courage to continue that counts. - Winston Churchill
 
 #------------ fail 01.01 ------------#
 sqoop import \
@@ -52,5 +53,22 @@ if it wasn't obvious, let me explain, where clause should precede the limit clau
 #--- lesson
 swap the clauses in the query like 'where $CONDITIONS limit 5'
 
+#------------ fail 02 ------------#
+sqoop export \
+--connect jdbc:mysql://quickstart.cloudera:3306/sq_export \
+--username root \
+--password cloudera \
+--staging-table customers_inc_stg \
+--table customers_inc \
+--update-key customer_id \
+--update-mode updateonly \
+--export-dir /user/cloudera/staging/sq_export/retail_db/customers_custom/01 \
+--num-mappers 1
 
+#--- error msg
+Staging table cannot be used when export is running in update mode.
+#--- reason
+the error is self explainatory and i could not find such limitaion in sqoop 1.4.5 doc 
+#--- solution
+remove staging table 
 
