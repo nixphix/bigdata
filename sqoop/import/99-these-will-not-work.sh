@@ -1,0 +1,56 @@
+#----------- following sqoop imports will not work, reason in comment -----------#
+# i have documented my fails here :P 
+# learn from my mistakes 
+
+#------------ fail 01.01 ------------#
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba \
+--password cloudera \
+--query 'select * from customers limit 5' \
+--target-dir /user/cloudera/staging/sq_import/retail_db/customers_custom/01 \
+--direct
+
+#--- error msg
+When importing query results in parallel, you must specify --split-by.
+#--- reason
+You cannot do direct path (mysqldump) while using a custom query, well you cannot do that will mysqldump utility itself. This is not sqoop's limitation
+#--- lesson
+don't mix --direct and --query options, use --num-mappers 1
+
+
+#------------ fail 01.02 ------------#
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba \
+--password cloudera \
+--query 'select * from customers limit 5' \
+--target-dir /user/cloudera/staging/sq_import/retail_db/customers_custom/01 \
+--num-mappers 1
+
+#--- error msg
+16/12/04 12:11:14 ERROR tool.ImportTool: Encountered IOException running import job: java.io.IOException: Query [select * from customers limit 5] must contain '$CONDITIONS' in WHERE clause.
+#--- reason
+Even though you are using one mapper and not --where clause, you got to add $CONDITIONS in your custom query
+#--- lesson
+add 'where $CONDITIONS' irrespective of mappers or where clause options use
+
+
+#------------ (epic) fail 01.03 ------------#
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username retail_dba \
+--password cloudera \
+--query 'select * from customers limit 5 where $CONDITIONS' \
+--target-dir /user/cloudera/staging/sq_import/retail_db/customers_custom/01 \
+--num-mappers 1
+
+#--- error msg
+16/12/04 12:15:35 ERROR manager.SqlManager: Error executing statement: com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'where  (1 = 0)' at line 1
+#--- reason
+if it wasn't obvious, let me explain, where clause should precede the limit clause
+#--- lesson
+swap the clauses in the query like 'where $CONDITIONS limit 5'
+
+
+
