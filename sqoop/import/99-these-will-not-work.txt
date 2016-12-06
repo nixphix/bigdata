@@ -1,7 +1,6 @@
 #----------- following sqoop imports will not work, reason in comment -----------#
 # i have documented my fails here :P 
 # learn from my mistakes 
-# Success is not final, failure is not fatal: it is the courage to continue that counts. - Winston Churchill
 
 #------------ fail 01.01 ------------#
 sqoop import \
